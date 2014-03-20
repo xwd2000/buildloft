@@ -42,6 +42,7 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegion
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
+import org.andengine.util.adt.list.SmartList;
 import org.andengine.util.debug.Debug;
 
 import android.graphics.Color;
@@ -55,6 +56,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.example.buildloft.sprite.AbstractGameSprite;
 import com.example.buildloft.sprite.impl.Board;
 
 /**
@@ -104,6 +106,8 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	private ZoomCamera mZoomCamera;
 	
 	private float mPinchZoomStartedCameraZoomFactor;
+	
+	private SmartList<AbstractGameSprite> gameSpriteList=new SmartList<AbstractGameSprite>();
 	// ===========================================================
 	// Constructors
 	// ===========================================================
@@ -199,9 +203,11 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		
 		
 		this.mScene.registerUpdateHandler(this.mPhysicsWorld);
+
+		Board board=new Board(this,mPhysicsWorld,mBoxFaceTextureRegion);
+		board.pasteToSence(board.getmBoardWidth(), board.getmBoardHeight(),this.mScene);
+		board.setFree();
 		
-		Board board=new Board(mPhysicsWorld,mBoxFaceTextureRegion,this.mEngine);
-		mScene.attachChild(board.getSprite());
 		return this.mScene;
 	}
 
@@ -249,34 +255,9 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	// ===========================================================
 
 	private void addFace(final float pX, final float pY) {
-		this.mFaceCount++;
-		Debug.d("Faces: " + this.mFaceCount);
-
-		final AnimatedSprite face;
-		final Body body;
-
-		//if(this.mFaceCount % 4 == 0) {
-			face = new AnimatedSprite(pX-BOARD_WIDTH/2, pY-BOARD_HEIGHT/2,BOARD_WIDTH,BOARD_HEIGHT, this.mBoxFaceTextureRegion, this.getVertexBufferObjectManager());
-			body = PhysicsFactory.createBoxBody(this.mPhysicsWorld, face, BodyType.DynamicBody, FIXTURE_DEF);
-//		} else if (this.mFaceCount % 4 == 1) {
-//			face = new AnimatedSprite(pX, pY, this.mCircleFaceTextureRegion, this.getVertexBufferObjectManager());
-//			body = PhysicsFactory.createCircleBody(this.mPhysicsWorld, face, BodyType.DynamicBody, FIXTURE_DEF);
-//		} else if (this.mFaceCount % 4 == 2) {
-//			face = new AnimatedSprite(pX, pY, this.mTriangleFaceTextureRegion, this.getVertexBufferObjectManager());
-//			body = PhysicsExample.createTriangleBody(this.mPhysicsWorld, face, BodyType.DynamicBody, FIXTURE_DEF);
-//		} else {
-//			face = new AnimatedSprite(pX, pY, this.mHexagonFaceTextureRegion, this.getVertexBufferObjectManager());
-//			body = PhysicsExample.createHexagonBody(this.mPhysicsWorld, face, BodyType.DynamicBody, FIXTURE_DEF);
-//		}
-			body.setAngularDamping(0f);
-			body.setLinearDamping(0f);
-			
-		face.animate(200);
-		face.setUserData(body);
-		this.mScene.registerTouchArea(face);
-		this.mScene.attachChild(face);
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(face, body, true, true));
-		
+		Board board=new Board(this, mPhysicsWorld, mBoxFaceTextureRegion);
+		board.pasteToSence(pX, pY, mScene);
+		gameSpriteList.add(board);
 	}
 	
 
@@ -411,7 +392,7 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 				clickPoint=new PointF(pSceneTouchEvent.getX(),pSceneTouchEvent.getY());
 				this.mScrollDetector.setEnabled(true);
 			}else if(pSceneTouchEvent.isActionUp()){
-				if(clickPoint.equals(pSceneTouchEvent.getX(), pSceneTouchEvent.getY()))
+				if(Math.abs(pSceneTouchEvent.getX()-clickPoint.x)<3&&Math.abs(pSceneTouchEvent.getY()-clickPoint.y)<3)
 				{
 					if(this.mPhysicsWorld != null) {
 						this.addFace(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());

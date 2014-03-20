@@ -2,11 +2,16 @@ package com.example.buildloft.sprite;
 
 import org.andengine.engine.Engine;
 import org.andengine.entity.Entity;
+import org.andengine.entity.scene.IOnAreaTouchListener;
+import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.extension.physics.box2d.PhysicsConnector;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
+import org.andengine.ui.activity.BaseGameActivity;
+
+import android.content.Context;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
@@ -16,24 +21,34 @@ public abstract class AbstractGameSprite extends Entity {
 	protected boolean isGrabed;
 	protected PhysicsWorld mPhysicsWorld;
 	protected TiledTextureRegion mTextureRegion;
+	protected Context mContext;
 	
+	protected static final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(10f, 0.7f, 0.5f);
 	
-	protected static final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(10f, 1f, 0f);
-	
-	public AbstractGameSprite(PhysicsWorld pPhysicsWorld,TiledTextureRegion pTextureRegion,Engine engine,float pX,float pY){
-		this.mTextureRegion=pTextureRegion;
-		this.sprite=createAnimatedSprite(pX,pY,engine);
-		
+	public AbstractGameSprite(Context context,PhysicsWorld pPhysicsWorld,TiledTextureRegion pTextureRegion){
 		this.mPhysicsWorld=pPhysicsWorld;
+		this.mContext=context;
+		this.mTextureRegion=pTextureRegion;
 	}
+	
+	public AnimatedSprite pasteToSence(float pX,float pY,Scene scene){
+		Engine currentEngine=((BaseGameActivity)mContext).getEngine();
+		sprite=createAnimatedSprite(pX,pY,currentEngine);
+		//Body body=createPhysicsBody();
+		sprite.animate(200);
+		//sprite.setUserData(body);
+		
+		scene.attachChild(sprite);
+		isGrabed=true;
+		return sprite;
+		//this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
+	}
+	
 	
 	public void setFree(){
 		if(isGrabed==true){
-			
 			Body body = createPhysicsBody();
 			mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
-			//this.mScene.unregisterTouchArea(obj);
-			//this.mScene.detachChild(obj);
 			isGrabed=false;
 		}
 	}
@@ -50,7 +65,7 @@ public abstract class AbstractGameSprite extends Entity {
 		//this.mScene.unregisterTouchArea(obj);
 		//this.mScene.detachChild(obj);
 	}
-	
+
 	
 	public AnimatedSprite getSprite() {
 		return sprite;
@@ -62,4 +77,5 @@ public abstract class AbstractGameSprite extends Entity {
 
 	public abstract Body createPhysicsBody();
 	public abstract AnimatedSprite createAnimatedSprite(float pX,float pY,Engine engine);
+	//public abstract TiledTextureRegion loadResource();
 }
