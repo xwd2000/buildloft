@@ -57,6 +57,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.example.buildloft.sprite.AbstractGameSprite;
+import com.example.buildloft.sprite.Crane;
 import com.example.buildloft.sprite.impl.Board;
 
 /**
@@ -108,6 +109,8 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	private float mPinchZoomStartedCameraZoomFactor;
 	
 	private SmartList<AbstractGameSprite> gameSpriteList=new SmartList<AbstractGameSprite>();
+	
+	private Crane crane;
 	// ===========================================================
 	// Constructors
 	// ===========================================================
@@ -207,6 +210,9 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		Board board=new Board(this,mPhysicsWorld,mBoxFaceTextureRegion);
 		board.pasteToSence(board.getmBoardWidth(), board.getmBoardHeight(),this.mScene);
 		board.setFree();
+		
+		crane = new Crane(10,mZoomCamera.getCenterY()-200,250F,20F,mBoxFaceTextureRegion, mEngine.getVertexBufferObjectManager(),this);
+		crane.pasteToScene(mScene);
 		
 		return this.mScene;
 	}
@@ -396,6 +402,7 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 				{
 					if(this.mPhysicsWorld != null) {
 						this.addFace(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
+						crane.startRun();
 						return true;
 					}
 				}	
