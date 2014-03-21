@@ -77,8 +77,6 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 
 	private static final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(10f, 1f, 0f);
 
-	private static final float BOARD_WIDTH=130L;
-	private static final float BOARD_HEIGHT=13L;
 	// ===========================================================
 	// Fields
 	// ===========================================================
@@ -260,10 +258,11 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	// Methods
 	// ===========================================================
 
-	private void addFace(final float pX, final float pY) {
+	private AbstractGameSprite addFace(final float pX, final float pY) {
 		Board board=new Board(this, mPhysicsWorld, mBoxFaceTextureRegion);
 		board.pasteToSence(pX, pY, mScene);
 		gameSpriteList.add(board);
+		return board;
 	}
 	
 
@@ -401,7 +400,8 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 				if(Math.abs(pSceneTouchEvent.getX()-clickPoint.x)<3&&Math.abs(pSceneTouchEvent.getY()-clickPoint.y)<3)
 				{
 					if(this.mPhysicsWorld != null) {
-						this.addFace(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
+						AbstractGameSprite gameSprite=this.addFace(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
+						gameSprite.setFree();
 						crane.startRun();
 						return true;
 					}
