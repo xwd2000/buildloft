@@ -57,6 +57,9 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.joints.PrismaticJoint;
+import com.badlogic.gdx.physics.box2d.joints.PrismaticJointDef;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
 import com.example.buildloft.sprite.AbstractGameSprite;
 import com.example.buildloft.sprite.Crane;
 import com.example.buildloft.sprite.impl.Board;
@@ -186,7 +189,7 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		final Rectangle right = new Rectangle(CAMERA_WIDTH - 2, 0, 2, CAMERA_HEIGHT, vertexBufferObjectManager);
 
 		final FixtureDef wallFixtureDef = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, ground, BodyType.StaticBody, wallFixtureDef);
+		Body groundBody=PhysicsFactory.createBoxBody(this.mPhysicsWorld, ground, BodyType.StaticBody, wallFixtureDef);
 		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roof, BodyType.StaticBody, wallFixtureDef);
 		PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, wallFixtureDef);
 		PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, wallFixtureDef);
@@ -217,8 +220,19 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		board.setFree();
 		
 		crane = new Crane(this,mPhysicsWorld,mBoxFaceTextureRegion,board,mZoomCamera);
-		crane.pasteToSence(crane.getCraneWidth()/2,crane.getCraneHeight()+50,this.mScene);
-		crane.setGrabed();
+		crane.pasteToSence(crane.getCraneWidth()/2+40,crane.getCraneHeight()+50,this.mScene);
+		crane.setFree();
+		
+		final PrismaticJointDef prismaticJointDef = new PrismaticJointDef();
+		prismaticJointDef.initialize(groundBody, (Body)crane.getSprite().getUserData(), groundBody.getWorldCenter(),new Vector2(20F,0F).nor());
+		prismaticJointDef.enableMotor = true;
+		prismaticJointDef.motorSpeed = crane.getSpeed();
+		prismaticJointDef.maxMotorForce = 100.0f;
+		prismaticJointDef.lowerTranslation = 0;
+		prismaticJointDef.upperTranslation = CAMERA_WIDTH-300;
+		prismaticJointDef.enableLimit=true;
+		this.mPhysicsWorld.createJoint(prismaticJointDef);
+		
 		
 		final Sprite nextSprite = new Sprite(CAMERA_WIDTH /20,CAMERA_HEIGHT/25, this.mNextTextureRegion, this.getVertexBufferObjectManager()) {
 			@Override

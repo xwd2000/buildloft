@@ -56,6 +56,7 @@ public abstract class AbstractGameSprite extends Entity {
 			if(facePhysicsConnector==null)
 			{
 				Body body = createPhysicsBody(BodyType.DynamicBody);
+				sprite.setUserData(body);
 				mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
 			}
 			else{
@@ -71,6 +72,7 @@ public abstract class AbstractGameSprite extends Entity {
 			if(facePhysicsConnector==null)
 			{
 				Body body = createPhysicsBody(BodyType.StaticBody);
+				sprite.setUserData(body);
 				mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
 			}
 			else{

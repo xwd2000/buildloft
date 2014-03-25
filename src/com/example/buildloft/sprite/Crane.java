@@ -33,7 +33,6 @@ public class Crane extends AbstractGameSprite{
 	private AbstractGameSprite mHoldObj;
 	private float speed=100F;
 	private Direction mDirection=Direction.RIGHT;
-	private PhysicsHandler mPhysicsHandler;
 	private boolean running=false;
 	private ZoomCamera mCamera;
 	
@@ -59,39 +58,7 @@ public class Crane extends AbstractGameSprite{
 
 	@Override
 	public AnimatedSprite createAnimatedSprite(float pX, float pY, Engine engine) {
-		AnimatedSprite  sprite = new AnimatedSprite(pX-mCraneWidth/2, pY-mCraneHeight/2,mCraneWidth,mCraneHeight, this.mTextureRegion, engine.getVertexBufferObjectManager()){
-			@Override
-			protected void onManagedUpdate(float pSecondsElapsed) {
-				if(running==true) {
-					if(Crane.this.mPhysicsHandler.getVelocityX()==0)
-					{
-						switch(mDirection){
-						case LEFT:
-							Crane.this.mPhysicsHandler.setVelocityX(-speed);
-						case RIGHT:
-							Crane.this.mPhysicsHandler.setVelocityX(speed);
-							
-						}
-					}
-					if(this.mX <0&&mDirection==Direction.LEFT){
-						Crane.this.mPhysicsHandler.setVelocityX(speed);
-						mDirection=Direction.RIGHT;
-					} else if((this.mX+this.getWidth()  > mCamera.getWidthRaw())&&mDirection==Direction.RIGHT) {
-						Crane.this.mPhysicsHandler.setVelocityX(-speed);
-						mDirection=Direction.LEFT;
-					} else{
-						
-					}
-				}else {
-					if(Crane.this.mPhysicsHandler.getVelocityX()!=0)
-						Crane.this.mPhysicsHandler.setVelocityX(0);
-				}
-
-				super.onManagedUpdate(pSecondsElapsed);
-			}
-			
-		};
-		mPhysicsHandler = new PhysicsHandler(sprite);
+		AnimatedSprite  sprite = new AnimatedSprite(pX-mCraneWidth/2, pY-mCraneHeight/2,mCraneWidth,mCraneHeight, this.mTextureRegion, engine.getVertexBufferObjectManager());
 		return sprite;
 	}
 	
