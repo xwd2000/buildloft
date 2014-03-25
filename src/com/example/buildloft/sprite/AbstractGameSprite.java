@@ -15,6 +15,7 @@ import android.content.Context;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 
 public abstract class AbstractGameSprite extends Entity {
 	protected AnimatedSprite sprite;
@@ -38,7 +39,11 @@ public abstract class AbstractGameSprite extends Entity {
 		sprite.animate(200);
 		//sprite.setUserData(body);
 		
-		scene.attachChild(sprite);
+		scene.attachChild(sprite);			
+		scene.registerTouchArea(sprite);
+		Body body = createPhysicsBody(BodyType.StaticBody);
+		sprite.setUserData(body);
+		mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
 		isGrabed=true;
 		return sprite;
 		//this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
@@ -47,8 +52,15 @@ public abstract class AbstractGameSprite extends Entity {
 	
 	public void setFree(){
 		if(isGrabed==true){
-			Body body = createPhysicsBody();
-			mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
+			final PhysicsConnector facePhysicsConnector = mPhysicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
+			if(facePhysicsConnector==null)
+			{
+				Body body = createPhysicsBody(BodyType.DynamicBody);
+				mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
+			}
+			else{
+				facePhysicsConnector.getBody().setType(BodyType.DynamicBody);
+			}
 			isGrabed=false;
 		}
 	}
@@ -57,9 +69,44 @@ public abstract class AbstractGameSprite extends Entity {
 		if(isGrabed==false){
 			final PhysicsConnector facePhysicsConnector = mPhysicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
 			if(facePhysicsConnector==null)
+			{
+				Body body = createPhysicsBody(BodyType.StaticBody);
+				mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
+			}
+			else{
+				facePhysicsConnector.getBody().setType(BodyType.StaticBody);
+			}
+			isGrabed=true;
+		}
+		//this.mScene.unregisterTouchArea(obj);
+		//this.mScene.detachChild(obj);
+	}
+	
+	public void removePhy(){
+		if(isGrabed==false){
+			final PhysicsConnector facePhysicsConnector = mPhysicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
+			if(facePhysicsConnector==null)
 				return;
 			mPhysicsWorld.unregisterPhysicsConnector(facePhysicsConnector);
 			mPhysicsWorld.destroyBody(facePhysicsConnector.getBody());
+			isGrabed=true;
+		}
+		//this.mScene.unregisterTouchArea(obj);
+		//this.mScene.detachChild(obj);
+	}
+	
+	public void removeEntity(Scene scene){
+		if(isGrabed==false){
+			final PhysicsConnector facePhysicsConnector = mPhysicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
+			if(facePhysicsConnector==null)
+				return;
+			mPhysicsWorld.unregisterPhysicsConnector(facePhysicsConnector);
+			mPhysicsWorld.destroyBody(facePhysicsConnector.getBody());
+			
+			scene.unregisterTouchArea(this.sprite);
+			scene.detachChild(this.sprite);
+			
+			System.gc();
 			isGrabed=true;
 		}
 		//this.mScene.unregisterTouchArea(obj);
@@ -75,7 +122,7 @@ public abstract class AbstractGameSprite extends Entity {
 		this.sprite = sprite;
 	}
 
-	public abstract Body createPhysicsBody();
+	public abstract Body createPhysicsBody(BodyType bodyType);
 	public abstract AnimatedSprite createAnimatedSprite(float pX,float pY,Engine engine);
 	//public abstract TiledTextureRegion loadResource();
 }

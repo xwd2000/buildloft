@@ -39,6 +39,7 @@ import org.andengine.opengl.texture.ITexture;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
+import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
@@ -82,11 +83,14 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	// ===========================================================
 
 	private BitmapTextureAtlas mBitmapTextureAtlas;
-
+	private BitmapTextureAtlas mBitmapTextureAtlasButton;
+	
 	private TiledTextureRegion mBoxFaceTextureRegion;
 	private TiledTextureRegion mCircleFaceTextureRegion;
 	private TiledTextureRegion mTriangleFaceTextureRegion;
 	private TiledTextureRegion mHexagonFaceTextureRegion;
+
+	private ITextureRegion mNextTextureRegion;   //按钮
 	
 	private Font huakangwawatiFont;
 	private static final int FONT_SIZE = 30;
@@ -113,9 +117,7 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	// Constructors
 	// ===========================================================
 
-	// ===========================================================
-	// Getter & Setter
-	// ===========================================================
+
 
 	// ===========================================================
 	// Methods for/from SuperClass/Interfaces
@@ -157,6 +159,10 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		this.huakangwawatiFont = FontFactory.createFromAsset(this.getFontManager(), huakangwawatiFontTexture, this.getAssets(), "huakangwawati.ttf", FONT_SIZE, true, Color.WHITE);
 		this.huakangwawatiFont.load();
 		
+		//创建按钮
+		this.mBitmapTextureAtlasButton = new BitmapTextureAtlas(this.getTextureManager(), 256, 128, TextureOptions.BILINEAR);
+		this.mNextTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlasButton, this, "next.png", 0, 0);
+		this.mBitmapTextureAtlasButton.load();
 		
 	}
 
@@ -205,12 +211,27 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		
 		this.mScene.registerUpdateHandler(this.mPhysicsWorld);
 
-		Board board=new Board(this,mPhysicsWorld,mBoxFaceTextureRegion);
+		
+		final Board board=new Board(this,mPhysicsWorld,mBoxFaceTextureRegion);
 		board.pasteToSence(board.getmBoardWidth(), board.getmBoardHeight(),this.mScene);
 		board.setFree();
 		
-		crane = new Crane(10,mZoomCamera.getCenterY()-200,250F,20F,mBoxFaceTextureRegion, mEngine.getVertexBufferObjectManager(),this);
-		crane.pasteToScene(mScene);
+		crane = new Crane(this,mPhysicsWorld,mBoxFaceTextureRegion,board,mZoomCamera);
+		crane.pasteToSence(crane.getCraneWidth()/2,crane.getCraneHeight()+50,this.mScene);
+		crane.setGrabed();
+		
+		final Sprite nextSprite = new Sprite(CAMERA_WIDTH /20,CAMERA_HEIGHT/25, this.mNextTextureRegion, this.getVertexBufferObjectManager()) {
+			@Override
+			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+				
+				if(pSceneTouchEvent.isActionDown()) {
+					board.setGrabed();
+				}
+				return true;
+			};
+		};
+		this.mScene.attachChild(nextSprite);
+		mScene.registerTouchArea(nextSprite);
 		
 		return this.mScene;
 	}
@@ -436,4 +457,20 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		Vector2Pool.recycle(velocity);
 	}
 
+	public float getGravityX() {
+		return mGravityX;
+	}
+
+
+	public float getGravityY() {
+		return mGravityY;
+	}
+
+
+	
+	
+	
+	// ===========================================================
+	// Getter & Setter
+	// ===========================================================
 }

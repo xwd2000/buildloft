@@ -4,6 +4,8 @@ import org.andengine.engine.Engine;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
+import org.andengine.extension.physics.box2d.util.Vector2Pool;
+import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -12,8 +14,10 @@ import org.andengine.ui.activity.BaseGameActivity;
 
 import android.content.Context;
 
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+import com.example.buildloft.PhysicsExample2;
 import com.example.buildloft.sprite.AbstractGameSprite;
 
 public class Board extends AbstractGameSprite{
@@ -30,18 +34,32 @@ public class Board extends AbstractGameSprite{
 		this.mBoardHeight=pBoardHeight;
 	}
 
-
+	private void jumpFace(Vector2 velocity) {
+		final Body faceBody = (Body)sprite.getUserData();
+		faceBody.setLinearVelocity(velocity);
+		Vector2Pool.recycle(velocity);
+	}
+	
 	
 	@Override
-	public Body createPhysicsBody() {
-		return PhysicsFactory.createBoxBody(this.mPhysicsWorld, sprite, BodyType.DynamicBody, FIXTURE_DEF);
+	public Body createPhysicsBody(BodyType bodyType) {
+		return PhysicsFactory.createBoxBody(this.mPhysicsWorld, sprite, bodyType, FIXTURE_DEF);
 	}
 
 	@Override
 	public AnimatedSprite createAnimatedSprite(float pX,float pY,Engine engine) {
-		return new AnimatedSprite(pX-mBoardWidth/2, pY-mBoardHeight/2,mBoardWidth,mBoardHeight, this.mTextureRegion, engine.getVertexBufferObjectManager());
+		return new AnimatedSprite(pX-mBoardWidth/2, pY-mBoardHeight/2,mBoardWidth,mBoardHeight, this.mTextureRegion, engine.getVertexBufferObjectManager()){
+			@Override
+			public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
+					float pTouchAreaLocalX, float pTouchAreaLocalY) {
+				final Vector2 velocity = Vector2Pool.obtain(((PhysicsExample2)Board.this.mContext).getGravityX() * -50, ((PhysicsExample2)Board.this.mContext).getGravityX()* -50);
+				Board.this.jumpFace(velocity);
+				return false;
+			}
+			
+		};
 	}
-	
+
 	
 
 //	@Override
