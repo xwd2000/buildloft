@@ -50,13 +50,18 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.hardware.SensorManager;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.Joint;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.Shape;
+import com.badlogic.gdx.physics.box2d.joints.LineJointDef;
 import com.badlogic.gdx.physics.box2d.joints.PrismaticJoint;
 import com.badlogic.gdx.physics.box2d.joints.PrismaticJointDef;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
@@ -190,7 +195,7 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 
 		final FixtureDef wallFixtureDef = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
 		Body groundBody=PhysicsFactory.createBoxBody(this.mPhysicsWorld, ground, BodyType.StaticBody, wallFixtureDef);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roof, BodyType.StaticBody, wallFixtureDef);
+		Body roofBody=PhysicsFactory.createBoxBody(this.mPhysicsWorld, roof, BodyType.StaticBody, wallFixtureDef);
 		PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, wallFixtureDef);
 		PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, wallFixtureDef);
 
@@ -220,7 +225,7 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		board.setFree();
 		
 		crane = new Crane(this,mPhysicsWorld,mBoxFaceTextureRegion,board,mZoomCamera);
-		crane.pasteToSence(crane.getCraneWidth()/2+40,crane.getCraneHeight()+50,this.mScene);
+		crane.pasteToSence(crane.getCraneWidth()/2+40,crane.getCraneHeight()/2+50,this.mScene);
 		crane.setFree();
 		
 		final PrismaticJointDef prismaticJointDef = new PrismaticJointDef();
@@ -228,18 +233,77 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		prismaticJointDef.enableMotor = true;
 		prismaticJointDef.motorSpeed = crane.getSpeed();
 		prismaticJointDef.maxMotorForce = 100.0f;
-		prismaticJointDef.lowerTranslation = 0;
+		prismaticJointDef.lowerTranslation = -100f;
 		prismaticJointDef.upperTranslation = CAMERA_WIDTH-300;
 		prismaticJointDef.enableLimit=true;
-		this.mPhysicsWorld.createJoint(prismaticJointDef);
+		final PrismaticJoint prismaticJoint=(PrismaticJoint)this.mPhysicsWorld.createJoint(prismaticJointDef);
 		
 		
-		final Sprite nextSprite = new Sprite(CAMERA_WIDTH /20,CAMERA_HEIGHT/25, this.mNextTextureRegion, this.getVertexBufferObjectManager()) {
+		float linkItemWidth=0.25f;
+		float linkItemHeight=1f;
+		float linkStartX=(crane.getCraneWidth()/2+40)/PIXEL_TO_METER_RATIO_DEFAULT;
+		float linkStartY=(crane.getCraneHeight()+50)/PIXEL_TO_METER_RATIO_DEFAULT;
+		Log.d("main","linkItemWidth="+linkItemWidth+";linkItemHeight="+linkItemHeight+";linkStartX="+linkStartX+";linkStartY="+linkStartY);
+		FixtureDef fd=new FixtureDef();
+		final PolygonShape shape = new PolygonShape();
+		shape.setAsBox(linkItemWidth/2, linkItemHeight/2);
+		fd.shape=shape;
+		fd.density = 20.0f;
+		fd.friction = 0.2f;
+		fd.filter.categoryBits = 0x0003;
+		fd.filter.maskBits = (short)(0xFFFF & ~0x0002);
+		
+		RevoluteJointDef jd=new RevoluteJointDef();
+		jd.collideConnected = false;
+		
+		LineJointDef lineJointDef=new LineJointDef();
+		lineJointDef.localAnchorA.set(linkStartX, linkStartY);
+		Body prevBody=(Body)crane.getSprite().getUserData();
+		int N=10;
+		for (int i = 0; i < N; ++i)
+		{
+			BodyDef bd=new BodyDef();
+			bd.type = BodyType.DynamicBody;
+			bd.position.set(linkStartX, linkStartY+(1/2+i)*linkItemHeight);
+			Log.d("main","bodyPosition=("+linkStartX+","+(linkStartY+(1/2+i)*linkItemHeight)+")");
+			AnimatedSprite sprite;
+			sprite=new AnimatedSprite(exchangePixel(linkStartX-linkItemWidth/2), exchangePixel(linkStartY+i*linkItemHeight),
+					exchangePixel(linkItemWidth),exchangePixel(linkItemHeight), this.mBoxFaceTextureRegion, this.getVertexBufferObjectManager());
+			Log.d("main","SpritePosition=("+exchangePixel(linkStartX-linkItemWidth/2)+","+exchangePixel(linkStartY+i*linkItemHeight)+")");
+			if (i == N - 1)
+			{
+				shape.setAsBox(1.5f, 1.5f);
+				sprite=new AnimatedSprite(exchangePixel(linkStartX-1.5f), exchangePixel(linkStartY),
+						exchangePixel(1.5f*2),exchangePixel(1.5f*2), this.mBoxFaceTextureRegion, this.getVertexBufferObjectManager());
+				fd.density = 100.0f;
+				fd.filter.categoryBits = 0x0002;
+				bd.position.set(linkStartX , linkStartY+i*linkItemHeight);
+				bd.angularDamping = 0.4f;
+			}
+			mPhysicsWorld.createBody(bd);
+			
+			Body linkBody = this.mPhysicsWorld.createBody(bd);
+			linkBody.createFixture(fd);
+			this.mScene.attachChild(sprite);
+			this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(
+			sprite, linkBody, true, true));
+			Vector2 anchor=new Vector2(linkStartX, linkStartY+i*linkItemHeight);
+			
+			jd.initialize(prevBody, body, anchor.nor());
+			mPhysicsWorld.createJoint(jd);
+			prevBody=linkBody;
+		}
+		lineJointDef.maxLength = N - 1.0f + extraLength;
+		
+		
+		
+		final Sprite nextSprite = new Sprite(CAMERA_WIDTH /20,CAMERA_HEIGHT-100, this.mNextTextureRegion, this.getVertexBufferObjectManager()) {
 			@Override
 			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
 				
 				if(pSceneTouchEvent.isActionDown()) {
 					board.setGrabed();
+					prismaticJoint.setMotorSpeed(-prismaticJoint.getMotorSpeed());
 				}
 				return true;
 			};
@@ -293,6 +357,12 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	// Methods
 	// ===========================================================
 
+	private float exchangePixel(float param){
+		
+		return param*PIXEL_TO_METER_RATIO_DEFAULT;
+	}
+	
+	
 	private AbstractGameSprite addFace(final float pX, final float pY) {
 		Board board=new Board(this, mPhysicsWorld, mBoxFaceTextureRegion);
 		board.pasteToSence(pX, pY, mScene);
