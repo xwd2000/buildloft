@@ -61,7 +61,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Joint;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
-import com.badlogic.gdx.physics.box2d.joints.LineJointDef;
+import com.badlogic.gdx.physics.box2d.joints.RopeJointDef;
+import com.badlogic.gdx.physics.box2d.joints.RopeJoint;
 import com.badlogic.gdx.physics.box2d.joints.PrismaticJoint;
 import com.badlogic.gdx.physics.box2d.joints.PrismaticJointDef;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
@@ -232,15 +233,15 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		prismaticJointDef.initialize(groundBody, (Body)crane.getSprite().getUserData(), groundBody.getWorldCenter(),new Vector2(20F,0F).nor());
 		prismaticJointDef.enableMotor = true;
 		prismaticJointDef.motorSpeed = crane.getSpeed();
-		prismaticJointDef.maxMotorForce = 100.0f;
+		prismaticJointDef.maxMotorForce = 1000.0f;
 		prismaticJointDef.lowerTranslation = -100f;
 		prismaticJointDef.upperTranslation = CAMERA_WIDTH-300;
 		prismaticJointDef.enableLimit=true;
 		final PrismaticJoint prismaticJoint=(PrismaticJoint)this.mPhysicsWorld.createJoint(prismaticJointDef);
 		
 		
-		float linkItemWidth=0.25f;
-		float linkItemHeight=1f;
+		float linkItemWidth=0.125f;
+		float linkItemHeight=0.5f;
 		float linkStartX=(crane.getCraneWidth()/2+40)/PIXEL_TO_METER_RATIO_DEFAULT;
 		float linkStartY=(crane.getCraneHeight()+50)/PIXEL_TO_METER_RATIO_DEFAULT;
 		Log.d("main","linkItemWidth="+linkItemWidth+";linkItemHeight="+linkItemHeight+";linkStartX="+linkStartX+";linkStartY="+linkStartY);
@@ -248,18 +249,18 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		final PolygonShape shape = new PolygonShape();
 		shape.setAsBox(linkItemWidth/2, linkItemHeight/2);
 		fd.shape=shape;
-		fd.density = 20.0f;
+		fd.density = 10.0f;
 		fd.friction = 0.2f;
 		fd.filter.categoryBits = 0x0003;
 		fd.filter.maskBits = (short)(0xFFFF & ~0x0002);
 		
 		RevoluteJointDef jd=new RevoluteJointDef();
 		jd.collideConnected = false;
-		
-		LineJointDef lineJointDef=new LineJointDef();
-		lineJointDef.localAnchorA.set(linkStartX, linkStartY);
+	
+		RopeJointDef ropeJointDef=new RopeJointDef();
+		ropeJointDef.localAnchorA.set(0, 0);
 		Body prevBody=(Body)crane.getSprite().getUserData();
-		int N=10;
+		int N=20;
 		for (int i = 0; i < N; ++i)
 		{
 			BodyDef bd=new BodyDef();
@@ -273,9 +274,10 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 			if (i == N - 1)
 			{
 				shape.setAsBox(1.5f, 1.5f);
+				fd.shape=shape;
 				sprite=new AnimatedSprite(exchangePixel(linkStartX-1.5f), exchangePixel(linkStartY),
 						exchangePixel(1.5f*2),exchangePixel(1.5f*2), this.mBoxFaceTextureRegion, this.getVertexBufferObjectManager());
-				fd.density = 100.0f;
+				fd.density = 50.0f;
 				fd.filter.categoryBits = 0x0002;
 				bd.position.set(linkStartX , linkStartY+i*linkItemHeight);
 				bd.angularDamping = 0.4f;
@@ -288,13 +290,18 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 			this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(
 			sprite, linkBody, true, true));
 			Vector2 anchor=new Vector2(linkStartX, linkStartY+i*linkItemHeight);
-			
-			jd.initialize(prevBody, body, anchor.nor());
+			jd.initialize(prevBody, linkBody, anchor); 
 			mPhysicsWorld.createJoint(jd);
 			prevBody=linkBody;
 		}
-		lineJointDef.maxLength = N - 1.0f + extraLength;
+		ropeJointDef.localAnchorB.set(0f,0f);
+ 
+		float extraLength = 0.01f;
+		ropeJointDef.maxLength = N*linkItemHeight - 1.0f + extraLength;
+		ropeJointDef.bodyB = prevBody;
 		
+		ropeJointDef.bodyA = (Body)crane.getSprite().getUserData(); 
+		RopeJoint ropeJoint= (RopeJoint) mPhysicsWorld.createJoint(ropeJointDef);
 		
 		
 		final Sprite nextSprite = new Sprite(CAMERA_WIDTH /20,CAMERA_HEIGHT-100, this.mNextTextureRegion, this.getVertexBufferObjectManager()) {

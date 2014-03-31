@@ -24,7 +24,7 @@ public abstract class AbstractGameSprite extends Entity {
 	protected TiledTextureRegion mTextureRegion;
 	protected Context mContext;
 	
-	protected static final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(10f, 0.7f, 0.5f);
+	protected static final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(200f, 0.7f, 0.5f);
 	
 	public AbstractGameSprite(Context context,PhysicsWorld pPhysicsWorld,TiledTextureRegion pTextureRegion){
 		this.mPhysicsWorld=pPhysicsWorld;
