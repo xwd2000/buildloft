@@ -1,4 +1,4 @@
-package com.example.buildloft.sprite;
+package com.example.buildloft.sprite.intf.impl;
 
 import org.andengine.engine.Engine;
 import org.andengine.engine.camera.Camera;
@@ -20,6 +20,7 @@ import android.util.Log;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.example.buildloft.adt.Direction;
+import com.example.buildloft.sprite.intf.AbstractGameSprite;
 
 public class Crane extends AbstractGameSprite{
 	
@@ -52,12 +53,12 @@ public class Crane extends AbstractGameSprite{
 
 
 	@Override
-	public Body createPhysicsBody(BodyType bodyType) {
+	protected Body createPhysicsBody(BodyType bodyType,AnimatedSprite sprite) {
 		return PhysicsFactory.createBoxBody(this.mPhysicsWorld, sprite, bodyType, FIXTURE_DEF);
 	}
 
 	@Override
-	public AnimatedSprite createAnimatedSprite(float pX, float pY, Engine engine) {
+	protected AnimatedSprite createAnimatedSprite(float pX, float pY, Engine engine) {
 		AnimatedSprite  sprite = new AnimatedSprite(pX-mCraneWidth/2, pY-mCraneHeight/2,mCraneWidth,mCraneHeight, this.mTextureRegion, engine.getVertexBufferObjectManager());
 		return sprite;
 	}

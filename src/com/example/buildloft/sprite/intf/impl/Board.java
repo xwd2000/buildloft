@@ -1,4 +1,4 @@
-package com.example.buildloft.sprite.impl;
+package com.example.buildloft.sprite.intf.impl;
 
 import org.andengine.engine.Engine;
 import org.andengine.entity.sprite.AnimatedSprite;
@@ -18,7 +18,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.example.buildloft.PhysicsExample2;
-import com.example.buildloft.sprite.AbstractGameSprite;
+import com.example.buildloft.sprite.intf.AbstractGameSprite;
 
 public class Board extends AbstractGameSprite{
 	private float mBoardWidth=130L;
@@ -42,12 +42,12 @@ public class Board extends AbstractGameSprite{
 	
 	
 	@Override
-	public Body createPhysicsBody(BodyType bodyType) {
+	protected Body createPhysicsBody(BodyType bodyType,AnimatedSprite sprite) {
 		return PhysicsFactory.createBoxBody(this.mPhysicsWorld, sprite, bodyType, FIXTURE_DEF);
 	}
 
 	@Override
-	public AnimatedSprite createAnimatedSprite(float pX,float pY,Engine engine) {
+	protected AnimatedSprite createAnimatedSprite(float pX,float pY,Engine engine) {
 		return new AnimatedSprite(pX-mBoardWidth/2, pY-mBoardHeight/2,mBoardWidth,mBoardHeight, this.mTextureRegion, engine.getVertexBufferObjectManager()){
 			@Override
 			public boolean onAreaTouched(TouchEvent pSceneTouchEvent,

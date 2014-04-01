@@ -66,9 +66,9 @@ import com.badlogic.gdx.physics.box2d.joints.RopeJoint;
 import com.badlogic.gdx.physics.box2d.joints.PrismaticJoint;
 import com.badlogic.gdx.physics.box2d.joints.PrismaticJointDef;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
-import com.example.buildloft.sprite.AbstractGameSprite;
-import com.example.buildloft.sprite.Crane;
-import com.example.buildloft.sprite.impl.Board;
+import com.example.buildloft.sprite.intf.AbstractGameSprite;
+import com.example.buildloft.sprite.intf.impl.Board;
+import com.example.buildloft.sprite.intf.impl.Crane;
 
 /**
  * (c) 2010 Nicolas Gramlich

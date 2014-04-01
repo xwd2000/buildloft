@@ -1,4 +1,4 @@
-package com.example.buildloft.sprite;
+package com.example.buildloft.sprite.intf;
 
 import org.andengine.engine.Engine;
 import org.andengine.entity.Entity;
@@ -17,7 +17,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 
-public abstract class AbstractGameSprite extends Entity {
+public abstract class AbstractGameSprite implements InterfGameSprite{
 	protected AnimatedSprite sprite;
 	protected boolean isGrabed;
 	protected PhysicsWorld mPhysicsWorld;
@@ -41,7 +41,7 @@ public abstract class AbstractGameSprite extends Entity {
 		
 		scene.attachChild(sprite);			
 		scene.registerTouchArea(sprite);
-		Body body = createPhysicsBody(BodyType.StaticBody);
+		Body body = createPhysicsBody(BodyType.StaticBody,sprite);
 		sprite.setUserData(body);
 		mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
 		isGrabed=true;
@@ -55,7 +55,7 @@ public abstract class AbstractGameSprite extends Entity {
 			final PhysicsConnector facePhysicsConnector = mPhysicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
 			if(facePhysicsConnector==null)
 			{
-				Body body = createPhysicsBody(BodyType.DynamicBody);
+				Body body = createPhysicsBody(BodyType.DynamicBody,sprite);
 				sprite.setUserData(body);
 				mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
 			}
@@ -71,7 +71,7 @@ public abstract class AbstractGameSprite extends Entity {
 			final PhysicsConnector facePhysicsConnector = mPhysicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
 			if(facePhysicsConnector==null)
 			{
-				Body body = createPhysicsBody(BodyType.StaticBody);
+				Body body = createPhysicsBody(BodyType.StaticBody,sprite);
 				sprite.setUserData(body);
 				mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
 			}
@@ -124,7 +124,7 @@ public abstract class AbstractGameSprite extends Entity {
 		this.sprite = sprite;
 	}
 
-	public abstract Body createPhysicsBody(BodyType bodyType);
-	public abstract AnimatedSprite createAnimatedSprite(float pX,float pY,Engine engine);
+	protected abstract Body createPhysicsBody(BodyType bodyType,AnimatedSprite sprite);
+	protected abstract AnimatedSprite createAnimatedSprite(float pX,float pY,Engine engine);
 	//public abstract TiledTextureRegion loadResource();
 }
