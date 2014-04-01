@@ -4,6 +4,7 @@ import org.andengine.engine.Engine;
 import org.andengine.entity.Entity;
 import org.andengine.entity.scene.IOnAreaTouchListener;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.shape.Shape;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.extension.physics.box2d.PhysicsConnector;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
@@ -32,7 +33,7 @@ public abstract class AbstractGameSprite implements InterfGameSprite{
 		this.mTextureRegion=pTextureRegion;
 	}
 	
-	public AnimatedSprite pasteToSence(float pX,float pY,Scene scene){
+	public Shape pasteToSence(float pX,float pY,Scene scene){
 		Engine currentEngine=((BaseGameActivity)mContext).getEngine();
 		sprite=createAnimatedSprite(pX,pY,currentEngine);
 		//Body body=createPhysicsBody();

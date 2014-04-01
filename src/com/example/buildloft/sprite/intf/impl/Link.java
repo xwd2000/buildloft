@@ -4,24 +4,27 @@ import java.util.ArrayList;
 
 import org.andengine.engine.Engine;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.shape.Shape;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+import com.example.buildloft.sprite.intf.AbstractGameSpriteBatch;
 import com.example.buildloft.sprite.intf.InterfGameSprite;
 
 import android.content.Context;
 
-public class Link implements InterfGameSprite{
-	private PhysicsWorld physicsWorld;
-	private Context context;
-	private TiledTextureRegion textureRegion;
+public class Link extends AbstractGameSpriteBatch{
 	private ArrayList<LinkItem> linkItems;
 	
+	public Link(Context context, PhysicsWorld pPhysicsWorld) {
+		super(context, pPhysicsWorld);
+		// TODO Auto-generated constructor stub
+	}
 	@Override
-	public AnimatedSprite pasteToSence(float pX, float pY, Scene scene) {
+	public Shape pasteToSence(float pX, float pY, Scene scene) {
 		// TODO Auto-generated method stub
 		return null;
 	}
