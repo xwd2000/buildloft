@@ -57,6 +57,8 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.example.buildloft.sprite.intf.impl.Board;
+import com.example.buildloft.sprite.intf.impl.CraneMachine;
 
 /**
  * (c) 2010 Nicolas Gramlich
@@ -154,6 +156,8 @@ public class PhysicsExample extends SimpleBaseGameActivity implements IAccelerat
 		this.huakangwawatiFont.load();
 		
 		
+		CraneMachine.loadResource(this, this.getTextureManager());
+		Board.loadResource(this, this.getTextureManager());
 	}
 
 	@Override
@@ -200,6 +204,11 @@ public class PhysicsExample extends SimpleBaseGameActivity implements IAccelerat
 		
 		
 		this.mScene.registerUpdateHandler(this.mPhysicsWorld);
+		
+		Board board=new Board(this,this.mPhysicsWorld);
+		CraneMachine can=new CraneMachine(this,this.mPhysicsWorld,mZoomCamera,board);
+		can.pasteToSence(50,50, mScene);
+		
 		return this.mScene;
 	}
 

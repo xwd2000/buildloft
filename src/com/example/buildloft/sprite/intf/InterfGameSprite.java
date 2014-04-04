@@ -6,7 +6,7 @@ import org.andengine.entity.sprite.AnimatedSprite;
 
 
 public interface InterfGameSprite {
-	public Shape pasteToSence(float pX,float pY,Scene scene);
+	public void pasteToSence(float pX,float pY,Scene scene);
 	public void setFree();
 	public void setGrabed();
 	public void removePhy();

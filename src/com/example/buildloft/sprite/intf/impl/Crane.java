@@ -9,10 +9,15 @@ import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.vbo.ITiledSpriteVertexBufferObject;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
+import org.andengine.opengl.texture.TextureManager;
+import org.andengine.opengl.texture.TextureOptions;
+import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
+import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITiledTextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
+import org.andengine.ui.activity.SimpleBaseGameActivity;
 
 import android.content.Context;
 import android.util.Log;
@@ -28,22 +33,18 @@ public class Crane extends AbstractGameSprite{
 	// ===========================================================
 	// Constants
 	// ===========================================================
+	private static TiledTextureRegion tiledTextureRegion;
 	private float mCraneWidth=200L;
 	private float mCraneHeight=20L;
-	
-	private AbstractGameSprite mHoldObj;
 	private float speed=100F;
 	private Direction mDirection=Direction.RIGHT;
 	private boolean running=false;
 	private ZoomCamera mCamera;
-	
 	// ===========================================================
 	// Constructors
 	// ===========================================================
-	public Crane(Context context, PhysicsWorld pPhysicsWorld,
-			TiledTextureRegion pTextureRegion,AbstractGameSprite holdObj,ZoomCamera camera) {
-		super(context, pPhysicsWorld, pTextureRegion);
-		mHoldObj=holdObj;
+	public Crane(Context context, PhysicsWorld pPhysicsWorld,ZoomCamera camera) {
+		super(context, pPhysicsWorld);
 		mCamera=camera;
 	}
 
@@ -54,12 +55,14 @@ public class Crane extends AbstractGameSprite{
 
 	@Override
 	protected Body createPhysicsBody(BodyType bodyType,AnimatedSprite sprite) {
-		return PhysicsFactory.createBoxBody(this.mPhysicsWorld, sprite, bodyType, FIXTURE_DEF);
+		return PhysicsFactory.createBoxBody(this.physicsWorld, sprite, bodyType, FIXTURE_DEF);
 	}
 
 	@Override
 	protected AnimatedSprite createAnimatedSprite(float pX, float pY, Engine engine) {
-		AnimatedSprite  sprite = new AnimatedSprite(pX-mCraneWidth/2, pY-mCraneHeight/2,mCraneWidth,mCraneHeight, this.mTextureRegion, engine.getVertexBufferObjectManager());
+		if(tiledTextureRegion==null)
+			loadResource(context, ((SimpleBaseGameActivity)context).getTextureManager());
+		AnimatedSprite  sprite = new AnimatedSprite(pX, pY,mCraneWidth,mCraneHeight, tiledTextureRegion, engine.getVertexBufferObjectManager());
 		return sprite;
 	}
 	
@@ -68,6 +71,12 @@ public class Crane extends AbstractGameSprite{
 	// ===========================================================
 	// other Methods
 	// ===========================================================
+	public static TiledTextureRegion loadResource(Context context,TextureManager textManager){
+		BitmapTextureAtlas bitmapTextureAtlas = new BitmapTextureAtlas(textManager, 64, 128, TextureOptions.BILINEAR);
+		tiledTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(bitmapTextureAtlas, context, "face_box_tiled.png", 0, 0, 2, 1); // 64x32
+		bitmapTextureAtlas.load();
+		return tiledTextureRegion;
+	}
 	
 	
 	

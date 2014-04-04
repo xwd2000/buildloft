@@ -6,6 +6,7 @@ import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.input.touch.TouchEvent;
+import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -21,17 +22,18 @@ import com.example.buildloft.PhysicsExample2;
 import com.example.buildloft.sprite.intf.AbstractGameSprite;
 
 public class Board extends AbstractGameSprite{
-	private float mBoardWidth=130L;
-	private float mBoardHeight=13L;
+	private float boardWidth=130L;
+	private float boardHeight=13L;
+	private static TiledTextureRegion textureRegion;
 	
-	public Board(Context context,PhysicsWorld pPhysicsWorld,TiledTextureRegion pTextureRegion) {
-		super(context,pPhysicsWorld,pTextureRegion);
+	public Board(Context context,PhysicsWorld pPhysicsWorld) {
+		super(context,pPhysicsWorld);
 	}
 	
-	public Board(Context context,PhysicsWorld pPhysicsWorld,float pBoardWidth,float pBoardHeight,TiledTextureRegion pTextureRegion) {
-		super(context,pPhysicsWorld,pTextureRegion);
-		this.mBoardWidth=pBoardWidth;
-		this.mBoardHeight=pBoardHeight;
+	public Board(Context context,PhysicsWorld pPhysicsWorld,float pBoardWidth,float pBoardHeight) {
+		super(context,pPhysicsWorld);
+		this.boardWidth=pBoardWidth;
+		this.boardHeight=pBoardHeight;
 	}
 
 	private void jumpFace(Vector2 velocity) {
@@ -43,16 +45,16 @@ public class Board extends AbstractGameSprite{
 	
 	@Override
 	protected Body createPhysicsBody(BodyType bodyType,AnimatedSprite sprite) {
-		return PhysicsFactory.createBoxBody(this.mPhysicsWorld, sprite, bodyType, FIXTURE_DEF);
+		return PhysicsFactory.createBoxBody(this.physicsWorld, sprite, bodyType, FIXTURE_DEF);
 	}
 
 	@Override
 	protected AnimatedSprite createAnimatedSprite(float pX,float pY,Engine engine) {
-		return new AnimatedSprite(pX-mBoardWidth/2, pY-mBoardHeight/2,mBoardWidth,mBoardHeight, this.mTextureRegion, engine.getVertexBufferObjectManager()){
+		return new AnimatedSprite(pX-boardWidth/2, pY-boardHeight/2,boardWidth,boardHeight, this.textureRegion, engine.getVertexBufferObjectManager()){
 			@Override
 			public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
 					float pTouchAreaLocalX, float pTouchAreaLocalY) {
-				final Vector2 velocity = Vector2Pool.obtain(((PhysicsExample2)Board.this.mContext).getGravityX() * -50, ((PhysicsExample2)Board.this.mContext).getGravityX()* -50);
+				final Vector2 velocity = Vector2Pool.obtain(((PhysicsExample2)Board.this.context).getGravityX() * -50, ((PhysicsExample2)Board.this.context).getGravityX()* -50);
 				Board.this.jumpFace(velocity);
 				return false;
 			}
@@ -73,21 +75,30 @@ public class Board extends AbstractGameSprite{
 //	}
 
 	public float getmBoardWidth() {
-		return mBoardWidth;
+		return boardWidth;
 	}
 
 	public void setmBoardWidth(float mBoardWidth) {
-		this.mBoardWidth = mBoardWidth;
+		this.boardWidth = mBoardWidth;
 	}
 
 	public float getmBoardHeight() {
-		return mBoardHeight;
+		return boardHeight;
 	}
 
 	public void setmBoardHeight(float mBoardHeight) {
-		this.mBoardHeight = mBoardHeight;
+		this.boardHeight = mBoardHeight;
 	}
-
+	
+	// ===========================================================
+	// other Methods
+	// ===========================================================
+	public static TiledTextureRegion loadResource(Context context,TextureManager textManager){
+		BitmapTextureAtlas bitmapTextureAtlas = new BitmapTextureAtlas(textManager, 64, 128, TextureOptions.BILINEAR);
+		textureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(bitmapTextureAtlas, context, "face_box_tiled.png", 0, 0, 2, 1); // 64x32
+		bitmapTextureAtlas.load();
+		return textureRegion;
+	}
 	
 	
 }

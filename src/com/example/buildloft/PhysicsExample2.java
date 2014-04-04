@@ -173,6 +173,10 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		this.mNextTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlasButton, this, "next.png", 0, 0);
 		this.mBitmapTextureAtlasButton.load();
 		
+		
+		Crane.loadResource(this, this.getTextureManager());
+		Board.loadResource(this, this.getTextureManager());
+		
 	}
 
 	@Override
@@ -221,16 +225,16 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		this.mScene.registerUpdateHandler(this.mPhysicsWorld);
 
 		
-		final Board board=new Board(this,mPhysicsWorld,mBoxFaceTextureRegion);
+		final Board board=new Board(this,mPhysicsWorld);
 		board.pasteToSence(board.getmBoardWidth(), board.getmBoardHeight(),this.mScene);
 		board.setFree();
 		
-		crane = new Crane(this,mPhysicsWorld,mBoxFaceTextureRegion,board,mZoomCamera);
+		crane = new Crane(this,mPhysicsWorld,mZoomCamera);
 		crane.pasteToSence(crane.getCraneWidth()/2+40,crane.getCraneHeight()/2+50,this.mScene);
 		crane.setFree();
 		
 		final PrismaticJointDef prismaticJointDef = new PrismaticJointDef();
-		prismaticJointDef.initialize(groundBody, (Body)crane.getSprite().getUserData(), groundBody.getWorldCenter(),new Vector2(20F,0F).nor());
+		prismaticJointDef.initialize(groundBody, (Body)crane.getPastedSprite().getUserData(), groundBody.getWorldCenter(),new Vector2(20F,0F).nor());
 		prismaticJointDef.enableMotor = true;
 		prismaticJointDef.motorSpeed = crane.getSpeed();
 		prismaticJointDef.maxMotorForce = 1000.0f;
@@ -259,7 +263,7 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	
 		RopeJointDef ropeJointDef=new RopeJointDef();
 		ropeJointDef.localAnchorA.set(0, 0);
-		Body prevBody=(Body)crane.getSprite().getUserData();
+		Body prevBody=(Body)crane.getPastedSprite().getUserData();
 		int N=20;
 		for (int i = 0; i < N; ++i)
 		{
@@ -300,7 +304,7 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		ropeJointDef.maxLength = N*linkItemHeight - 1.0f + extraLength;
 		ropeJointDef.bodyB = prevBody;
 		
-		ropeJointDef.bodyA = (Body)crane.getSprite().getUserData(); 
+		ropeJointDef.bodyA = (Body)crane.getPastedSprite().getUserData(); 
 		RopeJoint ropeJoint= (RopeJoint) mPhysicsWorld.createJoint(ropeJointDef);
 		
 		
@@ -371,7 +375,7 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	
 	
 	private AbstractGameSprite addFace(final float pX, final float pY) {
-		Board board=new Board(this, mPhysicsWorld, mBoxFaceTextureRegion);
+		Board board=new Board(this, mPhysicsWorld);
 		board.pasteToSence(pX, pY, mScene);
 		gameSpriteList.add(board);
 		return board;

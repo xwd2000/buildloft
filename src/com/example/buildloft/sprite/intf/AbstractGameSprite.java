@@ -21,44 +21,48 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 public abstract class AbstractGameSprite implements InterfGameSprite{
 	protected AnimatedSprite sprite;
 	protected boolean isGrabed;
-	protected PhysicsWorld mPhysicsWorld;
-	protected TiledTextureRegion mTextureRegion;
-	protected Context mContext;
+	protected PhysicsWorld physicsWorld;
+
+	protected Context context;
 	
 	protected static final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(200f, 0.7f, 0.5f);
 	
-	public AbstractGameSprite(Context context,PhysicsWorld pPhysicsWorld,TiledTextureRegion pTextureRegion){
-		this.mPhysicsWorld=pPhysicsWorld;
-		this.mContext=context;
-		this.mTextureRegion=pTextureRegion;
+	public AbstractGameSprite(Context context,PhysicsWorld pPhysicsWorld){
+		this.physicsWorld=pPhysicsWorld;
+		this.context=context;
+
 	}
 	
-	public Shape pasteToSence(float pX,float pY,Scene scene){
-		Engine currentEngine=((BaseGameActivity)mContext).getEngine();
-		sprite=createAnimatedSprite(pX,pY,currentEngine);
-		//Body body=createPhysicsBody();
-		sprite.animate(200);
-		//sprite.setUserData(body);
-		
-		scene.attachChild(sprite);			
-		scene.registerTouchArea(sprite);
-		Body body = createPhysicsBody(BodyType.StaticBody,sprite);
-		sprite.setUserData(body);
-		mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
-		isGrabed=true;
-		return sprite;
-		//this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
+	public void pasteToSence(float pX,float pY,Scene scene){
+		if(sprite==null){
+			Engine currentEngine=((BaseGameActivity)context).getEngine();
+			sprite=createAnimatedSprite(pX,pY,currentEngine);
+			//Body body=createPhysicsBody();
+			sprite.animate(200);
+			//sprite.setUserData(body);
+			
+			scene.attachChild(sprite);			
+			scene.registerTouchArea(sprite);
+			Body body = createPhysicsBody(BodyType.StaticBody,sprite);
+			sprite.setUserData(body);
+			physicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
+			isGrabed=true;
+			//this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
+		}else{
+			sprite.setPosition(pX, pY);
+		}
 	}
+	
 	
 	
 	public void setFree(){
 		if(isGrabed==true){
-			final PhysicsConnector facePhysicsConnector = mPhysicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
+			final PhysicsConnector facePhysicsConnector = physicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
 			if(facePhysicsConnector==null)
 			{
 				Body body = createPhysicsBody(BodyType.DynamicBody,sprite);
 				sprite.setUserData(body);
-				mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
+				physicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
 			}
 			else{
 				facePhysicsConnector.getBody().setType(BodyType.DynamicBody);
@@ -69,12 +73,12 @@ public abstract class AbstractGameSprite implements InterfGameSprite{
 	
 	public void setGrabed(){
 		if(isGrabed==false){
-			final PhysicsConnector facePhysicsConnector = mPhysicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
+			final PhysicsConnector facePhysicsConnector = physicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
 			if(facePhysicsConnector==null)
 			{
 				Body body = createPhysicsBody(BodyType.StaticBody,sprite);
 				sprite.setUserData(body);
-				mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
+				physicsWorld.registerPhysicsConnector(new PhysicsConnector(sprite, body, true, true));
 			}
 			else{
 				facePhysicsConnector.getBody().setType(BodyType.StaticBody);
@@ -87,11 +91,11 @@ public abstract class AbstractGameSprite implements InterfGameSprite{
 	
 	public void removePhy(){
 		if(isGrabed==false){
-			final PhysicsConnector facePhysicsConnector = mPhysicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
+			final PhysicsConnector facePhysicsConnector = physicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
 			if(facePhysicsConnector==null)
 				return;
-			mPhysicsWorld.unregisterPhysicsConnector(facePhysicsConnector);
-			mPhysicsWorld.destroyBody(facePhysicsConnector.getBody());
+			physicsWorld.unregisterPhysicsConnector(facePhysicsConnector);
+			physicsWorld.destroyBody(facePhysicsConnector.getBody());
 			isGrabed=true;
 		}
 		//this.mScene.unregisterTouchArea(obj);
@@ -100,11 +104,11 @@ public abstract class AbstractGameSprite implements InterfGameSprite{
 	
 	public void removeEntity(Scene scene){
 		if(isGrabed==false){
-			final PhysicsConnector facePhysicsConnector = mPhysicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
+			final PhysicsConnector facePhysicsConnector = physicsWorld.getPhysicsConnectorManager().findPhysicsConnectorByShape(sprite);
 			if(facePhysicsConnector==null)
 				return;
-			mPhysicsWorld.unregisterPhysicsConnector(facePhysicsConnector);
-			mPhysicsWorld.destroyBody(facePhysicsConnector.getBody());
+			physicsWorld.unregisterPhysicsConnector(facePhysicsConnector);
+			physicsWorld.destroyBody(facePhysicsConnector.getBody());
 			
 			scene.unregisterTouchArea(this.sprite);
 			scene.detachChild(this.sprite);
@@ -117,7 +121,7 @@ public abstract class AbstractGameSprite implements InterfGameSprite{
 	}
 
 	
-	public AnimatedSprite getSprite() {
+	public AnimatedSprite getPastedSprite() {
 		return sprite;
 	}
 
