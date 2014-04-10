@@ -1,5 +1,7 @@
 package com.example.buildloft.sprite.intf.impl;
 
+import static org.andengine.extension.physics.box2d.util.constants.PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT;
+
 import org.andengine.engine.Engine;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
@@ -23,23 +25,22 @@ import com.example.buildloft.consts.AppConst;
 import com.example.buildloft.sprite.intf.AbstractGameSprite;
 import com.example.buildloft.sprite.intf.AbstractGameSprite.AreaTouchCallBack;
 
-public class Board extends AbstractGameSprite{
-	private float boardWidth=130L;
-	private float boardHeight=13L;
+public class Circle extends AbstractGameSprite{
+	private float radius=30;
 	private static TiledTextureRegion textureRegion;
 	
-	public Board(Context context,PhysicsWorld pPhysicsWorld,BodyType bodyType) {
+	public Circle(Context context,PhysicsWorld pPhysicsWorld,BodyType bodyType) {
 		super(context,pPhysicsWorld,bodyType);
 	}
 	
-	public Board(Context context,PhysicsWorld pPhysicsWorld) {
+	public Circle(Context context,PhysicsWorld pPhysicsWorld) {
 		super(context,pPhysicsWorld);
 	}
 	
-	public Board(Context context,PhysicsWorld pPhysicsWorld,float pBoardWidth,float pBoardHeight) {
+	public Circle(Context context,PhysicsWorld pPhysicsWorld,float radius) {
 		super(context,pPhysicsWorld);
-		this.boardWidth=pBoardWidth;
-		this.boardHeight=pBoardHeight;
+		this.radius=radius;
+	
 	}
 
 	public void jumpFace(Vector2 velocity) {
@@ -52,12 +53,12 @@ public class Board extends AbstractGameSprite{
 	@Override
 	protected Body createPhysicsBody(BodyType bodyType,AnimatedSprite sprite) {
 		setFixtureDef(PhysicsFactory.createFixtureDef(200f, 0.7f, 0.5f,false,AppConst.CATEGORYBIT_OBJ,AppConst.MASK_OBJ,(short)0));
-		return PhysicsFactory.createBoxBody(this.physicsWorld, sprite, bodyType, fixtureDef);
+		return PhysicsFactory.createCircleBody(this.physicsWorld, sprite, bodyType, fixtureDef);
 	}
 
 	@Override
 	protected AnimatedSprite createAnimatedSprite(float pX,float pY,Engine engine) {
-		return new AnimatedSprite(pX-boardWidth/2, pY-boardHeight/2,boardWidth,boardHeight, this.textureRegion, engine.getVertexBufferObjectManager()){
+		return new AnimatedSprite(pX-radius, pY-radius,2*radius,2*radius, this.textureRegion, engine.getVertexBufferObjectManager()){
 			//如果sprite要出发areaTouch事件，添加areaTouchCallBack，并注册如下代码
 			@Override
 			public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
@@ -71,41 +72,13 @@ public class Board extends AbstractGameSprite{
 			
 		};
 	}
-
-	
-
-//	@Override
-//	public TiledTextureRegion loadResource() {
-//		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-//		BaseGameActivity baseGameActivity=(BaseGameActivity)mContext;
-//		BitmapTextureAtlas bitmapTextureAtlas = new BitmapTextureAtlas(baseGameActivity.getTextureManager(), 64, 128, TextureOptions.BILINEAR);
-//		bitmapTextureAtlas.load();
-//		return BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(bitmapTextureAtlas, mContext, "face_box_tiled.png", 0, 0, 2, 1); // 64x32
-//		
-//	}
-
-	public float getmBoardWidth() {
-		return boardWidth;
-	}
-
-	public void setmBoardWidth(float mBoardWidth) {
-		this.boardWidth = mBoardWidth;
-	}
-
-	public float getmBoardHeight() {
-		return boardHeight;
-	}
-
-	public void setmBoardHeight(float mBoardHeight) {
-		this.boardHeight = mBoardHeight;
-	}
 	
 	// ===========================================================
 	// other Methods
 	// ===========================================================
 	public static TiledTextureRegion loadResource(Context context,TextureManager textManager){
 		BitmapTextureAtlas bitmapTextureAtlas = new BitmapTextureAtlas(textManager, 64, 128, TextureOptions.BILINEAR);
-		textureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(bitmapTextureAtlas, context, "face_box_tiled.png", 0, 0, 2, 1); // 64x32
+		textureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(bitmapTextureAtlas, context, "face_circle_tiled.png", 0, 0, 2, 1); // 64x32
 		bitmapTextureAtlas.load();
 		return textureRegion;
 	}

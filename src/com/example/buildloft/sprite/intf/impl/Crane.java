@@ -24,7 +24,9 @@ import android.util.Log;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+import com.badlogic.gdx.physics.box2d.joints.PrismaticJoint;
 import com.example.buildloft.adt.Direction;
+import com.example.buildloft.consts.AppConst;
 import com.example.buildloft.sprite.intf.AbstractGameSprite;
 
 public class Crane extends AbstractGameSprite{
@@ -37,17 +39,18 @@ public class Crane extends AbstractGameSprite{
 	private float mCraneWidth=200L;
 	private float mCraneHeight=20L;
 	private float speed=100F;
-	private Direction mDirection=Direction.RIGHT;
-	private boolean running=false;
-	private ZoomCamera mCamera;
+	private Direction direction=Direction.RIGHT;
+
+
 	// ===========================================================
 	// Constructors
 	// ===========================================================
-	public Crane(Context context, PhysicsWorld pPhysicsWorld,ZoomCamera camera) {
+	public Crane(Context context, PhysicsWorld pPhysicsWorld) {
 		super(context, pPhysicsWorld);
-		mCamera=camera;
 	}
-
+	public Crane(Context context, PhysicsWorld pPhysicsWorld,BodyType bodyType) {
+		super(context, pPhysicsWorld,bodyType);
+	}
 	// ===========================================================
 	// Methods for/from SuperClass/Interfaces
 	// ===========================================================
@@ -55,7 +58,8 @@ public class Crane extends AbstractGameSprite{
 
 	@Override
 	protected Body createPhysicsBody(BodyType bodyType,AnimatedSprite sprite) {
-		return PhysicsFactory.createBoxBody(this.physicsWorld, sprite, bodyType, FIXTURE_DEF);
+		setFixtureDef(PhysicsFactory.createFixtureDef(200f, 0.7f, 0.5f,false,AppConst.CATEGORYBIT_CRANE,AppConst.MASK_CRANE,(short)0));
+		return PhysicsFactory.createBoxBody(this.physicsWorld, sprite, bodyType, fixtureDef);
 	}
 
 	@Override
@@ -88,19 +92,10 @@ public class Crane extends AbstractGameSprite{
 	public float getSpeed() {
 		return speed;
 	}
-	
 	public void setSpeed(float speed) {
 		this.speed = speed;
 	}
 	
-	public void startRun(){
-		running=true;
-	}
-	
-	public void stopRun(){
-		running=false;
-	}
-
 	public float getCraneWidth() {
 		return mCraneWidth;
 	}
@@ -115,6 +110,14 @@ public class Crane extends AbstractGameSprite{
 
 	public void setCraneHeight(float mCraneHeight) {
 		this.mCraneHeight = mCraneHeight;
+	}
+
+	public Direction getDirection() {
+		return direction;
+	}
+
+	public void setDirection(Direction direction) {
+		this.direction = direction;
 	}
 
 }

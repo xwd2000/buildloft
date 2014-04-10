@@ -14,7 +14,9 @@ import android.content.Context;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+import com.example.buildloft.consts.AppConst;
 import com.example.buildloft.sprite.intf.AbstractGameSprite;
 
 public class LinkItem extends AbstractGameSprite{
@@ -22,15 +24,19 @@ public class LinkItem extends AbstractGameSprite{
 	private float height=16f;
 	private static TiledTextureRegion textureRegion;
 	
+	
 	public LinkItem(Context context, PhysicsWorld pPhysicsWorld) {
 		super(context, pPhysicsWorld);
-		
 	}
+	
+	public LinkItem(Context context, PhysicsWorld pPhysicsWorld,BodyType bodyType) {
+		super(context, pPhysicsWorld,bodyType);
+	}
+	
 	public LinkItem(Context context, PhysicsWorld pPhysicsWorld,float width,float height) {
 		super(context, pPhysicsWorld);
 		this.width=width;
 		this.height=height;
-
 	}
 	
 	public void setWidth(float width) {
@@ -48,7 +54,8 @@ public class LinkItem extends AbstractGameSprite{
 	}
 	@Override
 	protected Body createPhysicsBody(BodyType bodyType,AnimatedSprite sprite) {
-		return PhysicsFactory.createBoxBody(this.physicsWorld, sprite, bodyType, FIXTURE_DEF);
+		setFixtureDef(PhysicsFactory.createFixtureDef(200f, 0.7f, 0.5f,false,AppConst.CATEGORYBIT_LINK,AppConst.MASK_LINK,(short)0));
+		return PhysicsFactory.createBoxBody(this.physicsWorld, sprite, bodyType, fixtureDef);
 	}
 
 	@Override

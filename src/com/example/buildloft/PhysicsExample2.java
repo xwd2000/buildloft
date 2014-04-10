@@ -227,11 +227,11 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		
 		final Board board=new Board(this,mPhysicsWorld);
 		board.pasteToSence(board.getmBoardWidth(), board.getmBoardHeight(),this.mScene);
-		board.setFree();
 		
-		crane = new Crane(this,mPhysicsWorld,mZoomCamera);
+		
+		crane = new Crane(this,mPhysicsWorld);
 		crane.pasteToSence(crane.getCraneWidth()/2+40,crane.getCraneHeight()/2+50,this.mScene);
-		crane.setFree();
+
 		
 		final PrismaticJointDef prismaticJointDef = new PrismaticJointDef();
 		prismaticJointDef.initialize(groundBody, (Body)crane.getPastedSprite().getUserData(), groundBody.getWorldCenter(),new Vector2(20F,0F).nor());
@@ -313,7 +313,7 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
 				
 				if(pSceneTouchEvent.isActionDown()) {
-					board.setGrabed();
+	
 					prismaticJoint.setMotorSpeed(-prismaticJoint.getMotorSpeed());
 				}
 				return true;
@@ -517,8 +517,8 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 				{
 					if(this.mPhysicsWorld != null) {
 						AbstractGameSprite gameSprite=this.addFace(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
-						gameSprite.setFree();
-						crane.startRun();
+						
+						//crane.startRun();
 						return true;
 					}
 				}	

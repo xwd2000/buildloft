@@ -33,17 +33,14 @@ import com.example.buildloft.sprite.intf.InterfGameSprite;
 import android.content.Context;
 import android.util.Log;
 
-public class Link implements InterfGameSprite{
+public class Link extends AbstractGameSpriteBatch implements InterfGameSprite{
 	private ArrayList<AbstractGameSprite> items;
 	private int length=10;
-	private PhysicsWorld physicsWorld;
-	private Context context;
 	private AbstractGameSprite anchorSprite;
 	private AbstractGameSprite movingSprite;
 	
 	public Link(Context context, PhysicsWorld pPhysicsWorld,AbstractGameSprite anchorSprite,AbstractGameSprite movingSprite){
-		this.physicsWorld=pPhysicsWorld;
-		this.context=context;
+		super(context, pPhysicsWorld);
 		this.anchorSprite=anchorSprite;
 		this.movingSprite=movingSprite;
 		items=new ArrayList<AbstractGameSprite>();
@@ -62,69 +59,58 @@ public class Link implements InterfGameSprite{
 		RevoluteJointDef jd=new RevoluteJointDef();
 		jd.collideConnected = false;
 	
-		RopeJointDef ropeJointDef=new RopeJointDef();
-		ropeJointDef.localAnchorA.set(0, 0);
+		
 		Body prevBody=(Body)anchorSprite.getPastedSprite().getUserData();
-		anchorSprite.setGrabed();
+		//anchorSprite.setBodyType(BodyType.StaticBody);
 		int N=length;
 		for (int i = 0; i < N; ++i)
 		{
 			Log.d("main","bodyPosition=("+linkStartX+","+(linkStartY+(1/2+i)*linkItemHeight)+")");
 			//AnimatedSprite sprite;
 			
-			LinkItem item = new LinkItem(context,physicsWorld);
-			AbstractGameSprite gameSprite=(AbstractGameSprite)item;
+			LinkItem item = new LinkItem(context,physicsWorld,BodyType.DynamicBody);
+			AbstractGameSprite gameSprite;
 			items.add(item);
-			item.pasteToSence(linkStartX-item.getWidth()/2,linkStartY+i*item.getHeight(), scene);
-			item.setFree();
-			Log.d("main","SpritePosition=("+(linkStartX-linkItemWidth/2)+","+(linkStartY+i*linkItemHeight)+")");
-			if (i == N - 1)
+			if(i!=N-1){
+				gameSprite=(AbstractGameSprite)item;
+				item.pasteToSence(linkStartX-item.getWidth()/2,linkStartY+i*item.getHeight(), scene);
+				Log.d("main","SpritePosition=("+(linkStartX-linkItemWidth/2)+","+(linkStartY+i*linkItemHeight)+")");
+			}
+			else
 			{	
 				gameSprite=movingSprite;
 				gameSprite.pasteToSence(linkStartX, linkStartY+i*linkItemHeight, scene);
-				gameSprite.setFree();
+				//gameSprite.setBodyType(BodyType.DynamicBody);
 			}
 	
 			
 			Body linkBody = (Body)gameSprite.getPastedSprite().getUserData();
+	
 			Vector2 anchor=new Vector2(useBodyPixel(linkStartX), useBodyPixel(linkStartY+i*linkItemHeight));
 			jd.initialize(prevBody, linkBody, anchor); 
 			physicsWorld.createJoint(jd);
 			prevBody=linkBody;
 		}
+		
+		RopeJointDef ropeJointDef=new RopeJointDef();
+		ropeJointDef.localAnchorA.set(0f, 0f);
 		ropeJointDef.localAnchorB.set(0f,0f);
  
 		float extraLength = 0.01f;
-		ropeJointDef.maxLength = N*linkItemHeight - 1.0f + extraLength;
+		ropeJointDef.maxLength = N*useBodyPixel(linkItemHeight) + extraLength;
 		ropeJointDef.bodyB = prevBody;
 		
 		ropeJointDef.bodyA = (Body)anchorSprite.getPastedSprite().getUserData(); 
+		ropeJointDef.collideConnected=true;
 		RopeJoint ropeJoint= (RopeJoint) physicsWorld.createJoint(ropeJointDef);
 	}
-	
-	
-	private float useBodyPixel(float spritePixel){
-		return spritePixel/PIXEL_TO_METER_RATIO_DEFAULT;
-	}
 
-	@Override
-	public void setFree() {
-		
-	}
 
-	@Override
-	public void setGrabed() {
-		
-	}
-
-	@Override
-	public void removePhy() {
-		
-	}
 
 	@Override
 	public void removeEntity(Scene scene) {
-		// TODO Auto-generated method stub
+		for(AbstractGameSprite sprite:items)
+			sprite.removeEntity(scene);
 		
 	}
 
@@ -132,7 +118,25 @@ public class Link implements InterfGameSprite{
 		LinkItem.loadResource(context, textManager);
 	}
 	
+	// 将sprint用坐标转化为body用坐标
+	protected float useBodyPixel(float spritePixel){
+		return spritePixel/PIXEL_TO_METER_RATIO_DEFAULT;
+	}
 
+
+	@Override
+	public void setPhysics(boolean hasBody) {
+		for(AbstractGameSprite sprite:items)
+			sprite.setPhysics(hasBody);
+		
+	}
+
+
+	@Override
+	public void setBodyType(BodyType bodyType) {
+		for(AbstractGameSprite sprite:items)
+			sprite.setBodyType(bodyType);
+	}
 
 	
 	
