@@ -17,9 +17,11 @@ import android.content.Context;
 
 
 
-public abstract class AbstractGameSpriteBatch extends AbstractSprite{
-	public AbstractGameSpriteBatch(Context context,PhysicsWorld pPhysicsWorld){
-		super(context,pPhysicsWorld);
+public abstract class AbstractPhysicsGameSpriteBatch extends AbstractGameSprite implements IPhysicsGameSprite{
+	protected PhysicsWorld physicsWorld;
+	public AbstractPhysicsGameSpriteBatch(Context context,PhysicsWorld pPhysicsWorld){
+		super(context);
+		this.physicsWorld=pPhysicsWorld;
 	}
 
 }

@@ -4,6 +4,8 @@ package com.example.buildloft;
 
 import static org.andengine.extension.physics.box2d.util.constants.PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT;
 
+import java.util.Random;
+
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.camera.SmoothCamera;
 import org.andengine.engine.camera.ZoomCamera;
@@ -51,6 +53,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.hardware.SensorManager;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.badlogic.gdx.math.Vector2;
@@ -60,7 +63,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.example.buildloft.adt.Direction;
 import com.example.buildloft.consts.AppConst;
-import com.example.buildloft.sprite.intf.AbstractGameSprite.AreaTouchCallBack;
+import com.example.buildloft.sprite.intf.AbstractSimpleGameSprite.AreaTouchCallBack;
+import com.example.buildloft.sprite.intf.impl.AndButton;
 import com.example.buildloft.sprite.intf.impl.Board;
 import com.example.buildloft.sprite.intf.impl.Circle;
 import com.example.buildloft.sprite.intf.impl.Crane;
@@ -159,6 +163,7 @@ public class PhysicsExample extends SimpleBaseGameActivity implements IAccelerat
 		CraneMachine.loadResource(this, this.getTextureManager());
 		Board.loadResource(this, this.getTextureManager());
 		Circle.loadResource(this, this.getTextureManager());
+		AndButton.loadResource(this, this.getTextureManager());
 	}
 
 	@Override
@@ -219,11 +224,29 @@ public class PhysicsExample extends SimpleBaseGameActivity implements IAccelerat
 		
 		Circle circle=new Circle(this,this.mPhysicsWorld);
 		
-		CraneMachine can=new CraneMachine(this,this.mPhysicsWorld,groundBody,circle);
+		final CraneMachine can=new CraneMachine(this,this.mPhysicsWorld,groundBody,circle);
 		can.setLimitTranslation(leftBody,rightBody);
 		can.pasteToSence(50,50, mScene);
 	
-		
+		float buttonWidth=80,buttonHeight=80;
+		AndButton button1=new AndButton(this,buttonWidth,buttonHeight);
+		button1.setAreaTouchCallBack(
+				new AndButton.AreaTouchCallBack() {
+					private int i=0;
+					@Override
+					public boolean onAreaTouched() {
+						if(can.getHungedObj()==null){
+							if(i%2==1)
+								can.hungObj(mScene, new Circle(PhysicsExample.this,mPhysicsWorld));
+							else
+								can.hungObj(mScene, new Board(PhysicsExample.this,mPhysicsWorld));
+							i++;
+						}else
+							can.dropHungedObj();
+						return false;
+					}
+		});
+		button1.pasteToSence(CAMERA_WIDTH-buttonWidth-5, CAMERA_HEIGHT-buttonHeight-5, mScene);
 		//Crane crane = new Crane(this,mPhysicsWorld,BodyType.DynamicBody);
 		//crane.pasteToSence(20, 100, mScene);
 		

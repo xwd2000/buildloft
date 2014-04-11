@@ -20,10 +20,9 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.example.buildloft.PhysicsExample2;
 import com.example.buildloft.consts.AppConst;
-import com.example.buildloft.sprite.intf.AbstractGameSprite;
-import com.example.buildloft.sprite.intf.AbstractGameSprite.AreaTouchCallBack;
+import com.example.buildloft.sprite.intf.AbstractPhysicsGameSprite;
 
-public class Board extends AbstractGameSprite{
+public class Board extends AbstractPhysicsGameSprite{
 	private float boardWidth=130L;
 	private float boardHeight=13L;
 	private static TiledTextureRegion textureRegion;
@@ -62,7 +61,7 @@ public class Board extends AbstractGameSprite{
 			@Override
 			public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
 					float pTouchAreaLocalX, float pTouchAreaLocalY) {
-				if(areaTouchCallBack!=null){
+				if(areaTouchCallBack!=null&&pSceneTouchEvent.isActionDown()){
 					return areaTouchCallBack.onAreaTouched();
 				}
 				else

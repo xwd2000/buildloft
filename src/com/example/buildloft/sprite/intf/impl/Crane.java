@@ -27,9 +27,9 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.joints.PrismaticJoint;
 import com.example.buildloft.adt.Direction;
 import com.example.buildloft.consts.AppConst;
-import com.example.buildloft.sprite.intf.AbstractGameSprite;
+import com.example.buildloft.sprite.intf.AbstractPhysicsGameSprite;
 
-public class Crane extends AbstractGameSprite{
+public class Crane extends AbstractPhysicsGameSprite{
 	
 
 	// ===========================================================

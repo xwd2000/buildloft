@@ -22,10 +22,9 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.example.buildloft.PhysicsExample2;
 import com.example.buildloft.consts.AppConst;
-import com.example.buildloft.sprite.intf.AbstractGameSprite;
-import com.example.buildloft.sprite.intf.AbstractGameSprite.AreaTouchCallBack;
+import com.example.buildloft.sprite.intf.AbstractPhysicsGameSprite;
 
-public class Circle extends AbstractGameSprite{
+public class Circle extends AbstractPhysicsGameSprite{
 	private float radius=30;
 	private static TiledTextureRegion textureRegion;
 	
@@ -63,7 +62,7 @@ public class Circle extends AbstractGameSprite{
 			@Override
 			public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
 					float pTouchAreaLocalX, float pTouchAreaLocalY) {
-				if(areaTouchCallBack!=null){
+				if(areaTouchCallBack!=null&&pSceneTouchEvent.isActionDown()){
 					return areaTouchCallBack.onAreaTouched();
 				}
 				else

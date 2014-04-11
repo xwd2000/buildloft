@@ -25,14 +25,15 @@ import com.badlogic.gdx.physics.box2d.joints.PrismaticJoint;
 import com.badlogic.gdx.physics.box2d.joints.PrismaticJointDef;
 import com.example.buildloft.adt.Direction;
 import com.example.buildloft.consts.AppConst;
-import com.example.buildloft.sprite.intf.AbstractGameSprite;
-import com.example.buildloft.sprite.intf.AbstractGameSpriteBatch;
-import com.example.buildloft.sprite.intf.InterfGameSprite;
+import com.example.buildloft.sprite.intf.AbstractPhysicsGameSprite;
+import com.example.buildloft.sprite.intf.AbstractPhysicsGameSpriteBatch;
+import com.example.buildloft.sprite.intf.IGameSprite;
+import com.example.buildloft.sprite.intf.IPhysicsGameSprite;
 
-public class CraneMachine extends AbstractGameSpriteBatch implements InterfGameSprite{
+public class CraneMachine extends AbstractPhysicsGameSpriteBatch implements IPhysicsGameSprite{
 	private Crane crane;
 	private Link link;
-	private AbstractGameSprite hungedObj;
+	private AbstractPhysicsGameSprite hungedObj;
 	private Body ground;   //地面，机器相对于地面平行移动
 	private Body limitTranslationLeftBody,limitTranslationRightBody;  //移动的左右边界
 	private PrismaticJoint prismaticJoint;
@@ -44,7 +45,7 @@ public class CraneMachine extends AbstractGameSpriteBatch implements InterfGameS
 	
 	}
 	
-	public CraneMachine(Context context,PhysicsWorld pPhysicsWorld,Body ground,AbstractGameSprite hungedObj){
+	public CraneMachine(Context context,PhysicsWorld pPhysicsWorld,Body ground,AbstractPhysicsGameSprite hungedObj){
 		super(context,pPhysicsWorld);
 		this.ground=ground;
 		this.hungedObj=hungedObj;
@@ -95,41 +96,31 @@ public class CraneMachine extends AbstractGameSpriteBatch implements InterfGameS
 			}
 		});
 		
-		link=new Link(context,physicsWorld,crane,hungedObj);
+		link=new Link(context,physicsWorld,crane);
 		link.pasteToSence(pX+crane.getCraneWidth()/2, pY+crane.getCraneHeight(), scene);
+		link.addHungedObj(scene, hungedObj);
+	}
+	
+	
+	
+	public void dropHungedObj() {
+		link.dropHungedObj();
+		hungedObj=null;
 	}
 
-	public Crane getCrane() {
-		return crane;
+	public void hungObj(Scene scene,AbstractPhysicsGameSprite hungedObj) {
+		link.addHungedObj(scene,hungedObj);
+		this.hungedObj=hungedObj;
+	}
+	
+	public void removeHungedObj(Scene scene){
+		
+		link.removeHungedObj(scene);
+		hungedObj=null;
 	}
 
-	public void setCrane(Crane crane) {
-		this.crane = crane;
-	}
-
-	public Link getLink() {
-		return link;
-	}
-
-	public void setLink(Link link) {
-		this.link = link;
-	}
-
-	public AbstractGameSprite getHungedObj() {
+	public AbstractPhysicsGameSprite getHungedObj() {
 		return hungedObj;
-	}
-
-	public void setHungedObj(AbstractGameSprite hungedObj) {
-		this.hungedObj = hungedObj;
-	}
-
-	public Body getLimitTranslationLeft() {
-		return limitTranslationLeftBody;
-	}
-
-
-	public Body getLimitTranslationRight() {
-		return limitTranslationRightBody;
 	}
 
 	public void setLimitTranslation(Body limitTranslationLeftBody,Body limitTranslationRightBody) {
@@ -151,9 +142,9 @@ public class CraneMachine extends AbstractGameSpriteBatch implements InterfGameS
 	}
 
 	@Override
-	public void removeEntity(Scene scene) {
-		crane.removeEntity(scene);
-		link.removeEntity(scene);
+	public void remove(Scene scene) {
+		crane.remove(scene);
+		link.remove(scene);
 	}
 	
 	

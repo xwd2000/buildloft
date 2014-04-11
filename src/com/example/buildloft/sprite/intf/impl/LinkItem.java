@@ -11,20 +11,19 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegion
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.example.buildloft.consts.AppConst;
-import com.example.buildloft.sprite.intf.AbstractGameSprite;
+import com.example.buildloft.sprite.intf.AbstractPhysicsGameSprite;
 
-public class LinkItem extends AbstractGameSprite{
+public class LinkItem extends AbstractPhysicsGameSprite{
 	private float width=4f;
 	private float height=16f;
 	private static TiledTextureRegion textureRegion;
-	
-	
 	public LinkItem(Context context, PhysicsWorld pPhysicsWorld) {
 		super(context, pPhysicsWorld);
 	}
@@ -59,8 +58,9 @@ public class LinkItem extends AbstractGameSprite{
 	}
 
 	@Override
-	protected AnimatedSprite createAnimatedSprite(float pX, float pY, Engine engine) {
+	protected AnimatedSprite createAnimatedSprite(final float pX, final float pY, Engine engine) {
 		return new AnimatedSprite(pX-width/2, pY-height/2,width,height, textureRegion, engine.getVertexBufferObjectManager());
+		
 	}
 
 	
@@ -73,5 +73,5 @@ public class LinkItem extends AbstractGameSprite{
 		bitmapTextureAtlas.load();
 		return textureRegion;
 	}
-	
+
 }
