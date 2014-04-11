@@ -39,7 +39,8 @@ public class AndButton extends AbstractSimpleGameSprite implements IGameSprite{
 	@Override
 	protected Sprite createAnimatedSprite(float pX, float pY,
 			Engine engine) {
-		return new Sprite(pX, pY,width,height, this.textureRegion, engine.getVertexBufferObjectManager()){
+		Sprite sprite=
+		new Sprite(pX, pY,width,height, this.textureRegion, engine.getVertexBufferObjectManager()){
 			//如果sprite要出发areaTouch事件，添加areaTouchCallBack，并注册如下代码
 			@Override
 			public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
@@ -52,6 +53,8 @@ public class AndButton extends AbstractSimpleGameSprite implements IGameSprite{
 			}
 			
 		};
+		sprite.setZIndex(20);
+		return sprite;
 	}
 
 	

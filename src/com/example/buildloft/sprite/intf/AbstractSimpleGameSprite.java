@@ -26,6 +26,8 @@ public abstract class AbstractSimpleGameSprite extends AbstractGameSprite implem
 			if(areaTouchCallBack!=null)
 				scene.registerTouchArea(sprite);
 			scene.attachChild(sprite);
+			scene.sortChildren();
+		
 		}else{
 			sprite.setPosition(pX, pY);
 		}
@@ -41,7 +43,9 @@ public abstract class AbstractSimpleGameSprite extends AbstractGameSprite implem
 	public void setAreaTouchCallBack(AreaTouchCallBack areaTouchCallBack) {
 		this.areaTouchCallBack = areaTouchCallBack;
 	}
-
+	public Sprite getPastedSprite() {
+		return sprite;
+	}
 	
 	protected abstract Sprite createAnimatedSprite(float pX,float pY,Engine engine);
 	

@@ -55,7 +55,8 @@ public abstract class AbstractPhysicsGameSprite extends AbstractGameSprite imple
 			sprite.animate(200);
 			//sprite.setUserData(body);
 			
-			scene.attachChild(sprite);			
+			scene.attachChild(sprite);	
+			scene.sortChildren();
 			scene.registerTouchArea(sprite);
 			spriteBody = createPhysicsBody(bodyType,sprite);
 			sprite.setUserData(spriteBody);

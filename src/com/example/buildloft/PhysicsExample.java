@@ -112,6 +112,8 @@ public class PhysicsExample extends SimpleBaseGameActivity implements IAccelerat
 	private ZoomCamera mZoomCamera;
 	
 	private float mPinchZoomStartedCameraZoomFactor;
+	
+
 	// ===========================================================
 	// Constructors
 	// ===========================================================
@@ -230,6 +232,7 @@ public class PhysicsExample extends SimpleBaseGameActivity implements IAccelerat
 	
 		float buttonWidth=80,buttonHeight=80;
 		AndButton button1=new AndButton(this,buttonWidth,buttonHeight);
+	
 		button1.setAreaTouchCallBack(
 				new AndButton.AreaTouchCallBack() {
 					private int i=0;
@@ -247,22 +250,13 @@ public class PhysicsExample extends SimpleBaseGameActivity implements IAccelerat
 					}
 		});
 		button1.pasteToSence(CAMERA_WIDTH-buttonWidth-5, CAMERA_HEIGHT-buttonHeight-5, mScene);
+		
 		//Crane crane = new Crane(this,mPhysicsWorld,BodyType.DynamicBody);
 		//crane.pasteToSence(20, 100, mScene);
 		
 		return this.mScene;
 	}
 
-//	@Override
-//	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
-//		if(this.mPhysicsWorld != null) {
-//			if(pSceneTouchEvent.isActionDown()) {
-//				this.addFace(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
 
 	@Override
 	public void onAccelerationAccuracyChanged(final AccelerationData pAccelerationData) {
@@ -301,18 +295,21 @@ public class PhysicsExample extends SimpleBaseGameActivity implements IAccelerat
 	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
 		final float zoomFactor = this.mZoomCamera.getZoomFactor();
 		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+		System.out.println("==start");
 	}
 
 	@Override
 	public void onScroll(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
 		final float zoomFactor = this.mZoomCamera.getZoomFactor();
 		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+		System.out.println("==onScroll");
 	}
 	
 	@Override
 	public void onScrollFinished(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
 		final float zoomFactor = this.mZoomCamera.getZoomFactor();
 		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+		System.out.println("==endScroll");
 		
 	}
 
@@ -349,10 +346,12 @@ public class PhysicsExample extends SimpleBaseGameActivity implements IAccelerat
 					if(this.mPhysicsWorld != null) {
 						Board newboard=new Board(PhysicsExample.this,mPhysicsWorld,100f, 100f);
 						newboard.pasteToSence(pSceneTouchEvent.getX(), pSceneTouchEvent.getY(), pScene);
+						
 						newboard.setBodyType(BodyType.DynamicBody);
 						return true;
 					}
 				}	
+				this.mScrollDetector.setEnabled(false);
 				clickPoint=null;
 			}
 			this.mScrollDetector.onTouchEvent(pSceneTouchEvent);
@@ -365,16 +364,19 @@ public class PhysicsExample extends SimpleBaseGameActivity implements IAccelerat
 	public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
 			ITouchArea pTouchArea, float pTouchAreaLocalX,
 			float pTouchAreaLocalY) {
+		
 		if(pSceneTouchEvent.isActionDown()) {
+			mScrollDetector.setEnabled(false);
 			if(pTouchArea instanceof Text)
 				return true;
 			else if(pTouchArea instanceof AnimatedSprite){
 				final AnimatedSprite broad = (AnimatedSprite) pTouchArea;
 				this.jumpFace(broad);
+				return true;
 			}
-			return true;
 		}
-		return false;
+		
+		return true;
 	}
 	
 	private void jumpFace(final AnimatedSprite face) {
