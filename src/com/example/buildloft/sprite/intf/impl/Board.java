@@ -61,8 +61,8 @@ public class Board extends AbstractPhysicsGameSprite{
 			@Override
 			public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
 					float pTouchAreaLocalX, float pTouchAreaLocalY) {
-				if(areaTouchCallBack!=null&&pSceneTouchEvent.isActionDown()){
-					return areaTouchCallBack.onAreaTouched();
+				if(getAreaTouchCallBack()!=null&&pSceneTouchEvent.isActionDown()){
+					return getAreaTouchCallBack().onAreaTouched();
 				}
 				else
 					return false;
