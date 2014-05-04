@@ -13,12 +13,18 @@ import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
+import org.andengine.entity.Entity;
+import org.andengine.entity.IEntity;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnAreaTouchListener;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.ITouchArea;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
+import org.andengine.entity.scene.menu.MenuScene;
+import org.andengine.entity.scene.menu.MenuScene.IOnMenuItemClickListener;
+import org.andengine.entity.scene.menu.item.IMenuItem;
+import org.andengine.entity.scene.menu.item.SpriteMenuItem;
 import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.shape.IShape;
 import org.andengine.entity.sprite.AnimatedSprite;
@@ -44,16 +50,20 @@ import org.andengine.opengl.texture.ITexture;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
+import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
+import org.andengine.util.adt.transformation.Transformation;
 import org.andengine.util.debug.Debug;
 
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.hardware.SensorManager;
+import android.opengl.GLES20;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.widget.Toast;
 
 import com.badlogic.gdx.math.Vector2;
@@ -77,7 +87,13 @@ import com.example.buildloft.sprite.intf.impl.CraneMachine;
  * @author Nicolas Gramlich implements IOnSceneTouchListener, 
  * @since 18:47:08 - 19.03.2010
  */
-public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelerationListener, IOnSceneTouchListener ,IScrollDetectorListener, IPinchZoomDetectorListener, IOnAreaTouchListener{
+public class PhysicsExample2 extends SimpleBaseGameActivity 
+	implements  IAccelerationListener, 
+				IOnSceneTouchListener ,
+				IScrollDetectorListener, 
+				IPinchZoomDetectorListener, 
+				IOnAreaTouchListener,
+				IOnMenuItemClickListener{
 	// ===========================================================
 	// Constants
 	// ===========================================================
@@ -86,6 +102,10 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	private static final int CAMERA_HEIGHT = 720;
 	private static final float MAX_ZOOMFACTOR = 2f;
 	private static final float MIN_ZOOMFACTOR = 1f;
+	
+	private static final int MENU_ID_RESET=0;
+	private static final int MENU_ID_QUIT=1;
+	private static final int MENU_ID_DROP=2;
 	
 	private static final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(10f, 1f, 0f);
 
@@ -101,7 +121,8 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	private PinchZoomDetector mPinchZoomDetector;
 	private SurfaceScrollDetector mScrollDetector;
 	private Scene mScene;
-
+	private MenuScene mUponMenuScene;
+	
 	private PhysicsWorld mPhysicsWorld;
 	private PointF clickPoint;
 	
@@ -112,7 +133,12 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	
 	private float mPinchZoomStartedCameraZoomFactor;
 	
-
+	protected ITextureRegion mMenuResetTextureRegion;
+	private BitmapTextureAtlas mMenuTexture;
+	protected ITextureRegion mMenuQuitTextureRegion;	
+	protected ITextureRegion mMenuDropTextureRegion;
+	
+	private CraneMachine can; //起重机
 	// ===========================================================
 	// Constructors
 	// ===========================================================
@@ -129,7 +155,7 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	public EngineOptions onCreateEngineOptions() {
 		Toast.makeText(this, "Touch the screen to add objects.", Toast.LENGTH_LONG).show();
 
-		this.mZoomCamera = new ZoomCamera(0, 20, CAMERA_WIDTH, CAMERA_HEIGHT);
+		this.mZoomCamera = new ZoomCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
 		this.mZoomCamera.setBounds(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
 		this.mZoomCamera.setBoundsEnabled(true);
 		if(MultiTouch.isSupported(this)) {
@@ -160,6 +186,15 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		FontFactory.setAssetBasePath("font/");
 		this.huakangwawatiFont = FontFactory.createFromAsset(this.getFontManager(), huakangwawatiFontTexture, this.getAssets(), "huakangwawati.ttf", FONT_SIZE, true, Color.WHITE);
 		this.huakangwawatiFont.load();
+
+		this.mMenuTexture = new BitmapTextureAtlas(this.getTextureManager(), 256, 128, TextureOptions.BILINEAR);
+		this.mMenuResetTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mMenuTexture, this, "menu_reset.png", 0, 0);
+		this.mMenuQuitTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mMenuTexture, this, "menu_quit.png", 0, 50);
+		this.mMenuTexture.load();
+		
+		BitmapTextureAtlas bitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 256, 128, TextureOptions.BILINEAR);
+		this.mMenuDropTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(bitmapTextureAtlas, this, "next.png", 0, 0);
+		bitmapTextureAtlas.load();
 		
 		
 		CraneMachine.loadResource(this, this.getTextureManager());
@@ -171,8 +206,10 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 	@Override
 	public Scene onCreateScene() {
 		this.mEngine.registerUpdateHandler(new FPSLogger());
-
 		this.mScene = new Scene();
+		this.mUponMenuScene=createUponMenuScene();
+		this.mScene.setChildScene(this.mUponMenuScene, false, false, false);
+		
 		this.mScene.setBackground(new Background(0, 0, 0));
 		this.mScene.setOnSceneTouchListener(this);
 		this.mScene.setOnAreaTouchListener(this);
@@ -226,31 +263,12 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		board.pasteToSence(230, 230, mScene);
 		Circle circle=new Circle(this,this.mPhysicsWorld);
 		
-		final CraneMachine can=new CraneMachine(this,this.mPhysicsWorld,groundBody,circle);
+		can=new CraneMachine(this,this.mPhysicsWorld,groundBody,circle);
 		can.setLimitTranslation(leftBody,rightBody);
 		can.pasteToSence(50,50, mScene);
 	
 		float buttonWidth=80,buttonHeight=80;
-		AndButton button1=new AndButton(this,buttonWidth,buttonHeight);
 	
-		button1.setAreaTouchCallBack(
-				new AndButton.AreaTouchCallBack() {
-					private int i=0;
-					@Override
-					public boolean onAreaTouched() {
-						if(can.getHungedObj()==null){
-							if(i%2==1)
-								can.hungObj(mScene, new Circle(PhysicsExample2.this,mPhysicsWorld));
-							else
-								can.hungObj(mScene, new Board(PhysicsExample2.this,mPhysicsWorld));
-							i++;
-						}else
-							can.dropHungedObj();
-						return false;
-					}
-		});
-		button1.pasteToSence(CAMERA_WIDTH-buttonWidth-5, CAMERA_HEIGHT-buttonHeight-5, mScene);
-		
 		//Crane crane = new Crane(this,mPhysicsWorld,BodyType.DynamicBody);
 		//crane.pasteToSence(20, 100, mScene);
 		
@@ -286,10 +304,6 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		this.disableAccelerationSensor();
 	}
 
-	// ===========================================================
-	// Methods
-	// ===========================================================
-	
 	@Override
 	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
 		final float zoomFactor = this.mZoomCamera.getZoomFactor();
@@ -382,9 +396,97 @@ public class PhysicsExample2 extends SimpleBaseGameActivity implements IAccelera
 		return true;
 	}
 	
+	@Override
+	public boolean onKeyDown(int pKeyCode, KeyEvent pEvent) {
+		if(pKeyCode == KeyEvent.KEYCODE_MENU && pEvent.getAction() == KeyEvent.ACTION_DOWN) {
+			if(this.mScene.hasChildScene()) {
+				/* Remove the menu and reset it. */
+				this.mScene.back();
+			} else {
+			
+				setMenuSceneHorizontal(mUponMenuScene);
+				/* Attach the menu. */
+				this.mScene.setChildScene(this.mUponMenuScene, false, false, false);
+				
+			}
+			return true;
+		} else {
+			return super.onKeyDown(pKeyCode, pEvent);
+		}
+	}
 
+	private int tmpi=0;
+	@Override
+	public boolean onMenuItemClicked(final MenuScene pMenuScene, final IMenuItem pMenuItem, final float pMenuItemLocalX, final float pMenuItemLocalY) {
+			switch(pMenuItem.getID()) {
+				case MENU_ID_RESET:
+					/* Restart the animation. */
+					PhysicsExample2.this.mUponMenuScene.reset();
+
+					/* Remove the menu and reset it. */
+					PhysicsExample2.this.mUponMenuScene.clearChildScene();
+					PhysicsExample2.this.mUponMenuScene.reset();
+					return true;
+				case MENU_ID_QUIT:
+					/* End Activity. */
+					PhysicsExample2.this.finish();
+					return true;
+				case MENU_ID_DROP:
+					if(can.getHungedObj()==null){
+						if(tmpi%2==1)
+							can.hungObj(mScene, new Circle(PhysicsExample2.this,mPhysicsWorld));
+						else
+							can.hungObj(mScene, new Board(PhysicsExample2.this,mPhysicsWorld));
+						tmpi++;
+					}else
+						can.dropHungedObj();
+					return true;
+				default:
+					return false;
+			}
+		}
+	// ===========================================================
+	// Methods
+	// ===========================================================
 	
+	private MenuScene createUponMenuScene(){
+		this.mUponMenuScene = new MenuScene(this.mZoomCamera);
+		
+		final SpriteMenuItem resetMenuItem = new SpriteMenuItem(MENU_ID_RESET, this.mMenuResetTextureRegion, this.getVertexBufferObjectManager());
+		resetMenuItem.setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+		resetMenuItem.setWidth(150);
+		this.mUponMenuScene.addMenuItem(resetMenuItem);
+		
+
+		final SpriteMenuItem quitMenuItem = new SpriteMenuItem(MENU_ID_QUIT, this.mMenuQuitTextureRegion, this.getVertexBufferObjectManager());
+		quitMenuItem.setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+		quitMenuItem.setWidth(150);
+		this.mUponMenuScene.addMenuItem(quitMenuItem);
+		
+		final SpriteMenuItem quitMenuItem2 = new SpriteMenuItem(MENU_ID_DROP, this.mMenuDropTextureRegion, this.getVertexBufferObjectManager());
+		quitMenuItem2.setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+		this.mUponMenuScene.addMenuItem(quitMenuItem2);
 	
+		this.mUponMenuScene.buildAnimations();
+		
+		//mUponMenuScene.setPosition(-CAMERA_WIDTH/2+quitMenuItem.getWidth()*quitMenuItem.getChildCount()/2, -CAMERA_HEIGHT/2+quitMenuItem.getHeight()/2);
+		this.mUponMenuScene.setBackgroundEnabled(false);
+		setMenuSceneHorizontal(mUponMenuScene);
+		
+		
+		this.mUponMenuScene.setOnMenuItemClickListener(this);
+		return mUponMenuScene;
+	}
+	private void setMenuSceneHorizontal(MenuScene pMenuScene){
+		float startX=0;
+		for(int i=0;i<pMenuScene.getChildCount();i++){
+			IEntity item=pMenuScene.getChildByIndex(i);
+			SpriteMenuItem menuItem=(SpriteMenuItem) item;
+			
+			item.setPosition(startX, CAMERA_HEIGHT-menuItem.getHeight());
+			startX=startX+menuItem.getWidth();
+		}
+	}
 
 	// ===========================================================
 	// Inner and Anonymous Classes
